@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { join } from 'path';
-import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
-import { CaslModule } from './casl/casl.module';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AirportModule } from './airport/airport.module';
@@ -14,6 +12,13 @@ import { FlightModule } from './flight/flight.module';
 import { StaffModule } from './staff/staff.module';
 import { PassengerModule } from './passenger/passenger.module';
 import { BookingModule } from './booking/booking.module';
+import { User } from './user/entities/user.entity';
+import { Airport } from './airport/entities/airport.entity';
+import { Flight } from './flight/entities/flight.entity';
+import { Staff } from './staff/entities/staff.entity';
+import { Passenger } from './passenger/entities/passenger.entity';
+import { Booking } from './booking/entities/booking.entity';
+import { FlightStaff } from './flight/entities/flight_staff';
 @Module({
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -39,11 +44,11 @@ import { BookingModule } from './booking/booking.module';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       synchronize: true,
+      logging: true,
+      entities: [User, Airport, Flight, Staff, Passenger, Booking, FlightStaff],
     }),
 
-    UsersModule,
-    AuthModule, 
-    CaslModule,
+    AuthModule,
     UserModule,
     AirportModule,
     FlightModule,

@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { FlightStaff } from './flight_staff';
 
-
 @Entity('flights')
 export class Flight {
   @PrimaryGeneratedColumn('uuid')
@@ -35,16 +34,20 @@ export class Flight {
     type: 'enum',
     enum: ['ON_TIME', 'DELAYED', 'CANCELED'],
   })
-  status: string; // N:1 relationship with Airport (Departure)
+  status: string;
+  // N:1 relationship with Airport (Departure)
 
   @ManyToOne(() => Airport, (airport) => airport.departingFlights)
-  departureAirport: Airport; // N:1 relationship with Airport (Destination)
+  departureAirport: Airport;
+  // N:1 relationship with Airport (Destination)
 
   @ManyToOne(() => Airport, (airport) => airport.arrivingFlights)
-  destinationAirport: Airport; // 1:N relationship with Bookings
+  destinationAirport: Airport;
+  // 1:N relationship with Bookings
 
   @OneToMany(() => Booking, (booking) => booking.flight)
-  bookings: Booking[]; //relationship is now 1:N to the join table
+  bookings: Booking[];
+  //relationship is now 1:N to the join table
 
   @OneToMany(() => FlightStaff, (flightStaff) => flightStaff.flight)
   staffAssignments: FlightStaff[];

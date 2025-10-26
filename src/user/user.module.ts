@@ -6,3 +6,4 @@ import { UserResolver } from './user.resolver';
   providers: [UserResolver, UserService],
 })
 export class UserModule {}
+ 

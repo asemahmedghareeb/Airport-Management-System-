@@ -4,9 +4,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await app.listen(process.env.PORT!);
-  console.log('Server started on http://localhost:3000/graphql');
+  console.log(`Server started on http://localhost:${process.env.PORT}/graphql`);
 } 
-bootstrap();
+bootstrap(); 
    
    
 // docker-compose => it is a tool that allows you to define and run multi-container Docker applications. 
