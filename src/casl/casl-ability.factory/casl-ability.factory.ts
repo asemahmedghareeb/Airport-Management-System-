@@ -46,14 +46,14 @@ export class CaslAbilityFactory {
 }
 
 
-const user = new User();
-const article = new Article();
-article.authorId = user.id;
-article.isPublished = false;
-user.isAdmin = false;
+// const user = new User();
+// const article = new Article();
+// article.authorId = user.id;
+// article.isPublished = false;
+// user.isAdmin = false;
 
-const ability = new CaslAbilityFactory().createForUser(user);
-console.log(ability.can(Action.Read, Article)); 
-console.log(ability.can(Action.Update, Article)); 
-console.log(ability.can(Action.Create, Article));
-console.log(ability.can(Action.Delete, Article));
+// const ability = new CaslAbilityFactory().createForUser(user);
+// console.log(ability.can(Action.Read, Article)); 
+// console.log(ability.can(Action.Update, Article)); 
+// console.log(ability.can(Action.Create, Article));
+// console.log(ability.can(Action.Delete, Article));
