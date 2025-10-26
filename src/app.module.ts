@@ -44,9 +44,9 @@ import { FlightStaff } from './flight/entities/flight_staff';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       synchronize: true,
-      logging: true,
+      logging: ['error', 'warn'],
       entities: [User, Airport, Flight, Staff, Passenger, Booking, FlightStaff],
-    }),
+    }), 
 
     AuthModule,
     UserModule,

@@ -7,7 +7,7 @@ async function bootstrap() {
   console.log(`Server started on http://localhost:${process.env.PORT}/graphql`);
 } 
 bootstrap(); 
-   
+    
    
 // docker-compose => it is a tool that allows you to define and run multi-container Docker applications. 
 
