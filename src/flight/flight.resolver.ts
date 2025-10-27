@@ -85,7 +85,7 @@ export class FlightResolver {
   }
 
   @ResolveField(() => [Staff], { nullable: true })
-  staffAssignments(@Parent() flight: Flight): Promise<Staff[]>  {
-    return this.staffService.findByFlight(flight.id)
+  staffAssignments(@Parent() flight: Flight): Promise<Staff[]> {
+    return this.staffService.findByFlight(flight.id);
   }
 }

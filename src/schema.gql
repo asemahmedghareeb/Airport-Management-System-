@@ -89,11 +89,12 @@ type PaginatedFlightResponse {
   hasNextPage: Boolean!
 }
 
+type AuthResponse {
+  accessToken: String!
+  user: User!
+}
+
 type Query {
-  publicHello: String!
-  me: String!
-  adminOnly: String!
-  userArea: String!
   airports(pagination: PaginationInput): PaginatedAirportResponse!
   airport(id: ID!): Airport!
   flights(pagination: PaginationInput, filter: FlightFilterInput): PaginatedFlightResponse!
@@ -113,13 +114,42 @@ input FlightFilterInput {
 }
 
 type Mutation {
-  login(username: String!): String!
+  registerPassenger(input: RegisterPassengerInput!): AuthResponse!
+  registerStaff(input: RegisterStaffInput!): AuthResponse!
+  login(input: LoginInput!): AuthResponse!
   createAirport(input: CreateAirportInput!): Airport!
   updateAirport(input: UpdateAirportInput!): Airport!
   removeAirport(id: ID!): Boolean!
   createFlight(input: CreateFlightInput!): Flight!
   updateFlight(input: UpdateFlightInput!): Flight!
   removeFlight(id: ID!): Boolean!
+}
+
+input RegisterPassengerInput {
+  email: String!
+  password: String!
+  name: String!
+  passportNumber: String!
+  nationality: String
+}
+
+input RegisterStaffInput {
+  email: String!
+  password: String!
+
+  """User's top-level role: 'Admin' or 'Staff'"""
+  userRole: String!
+  employeeId: String!
+  name: String!
+
+  """Staff's job role: 'Pilot', 'Crew', 'Security', etc."""
+  staffRole: String!
+  airportId: ID!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
 }
 
 input CreateAirportInput {
