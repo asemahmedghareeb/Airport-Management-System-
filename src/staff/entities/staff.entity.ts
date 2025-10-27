@@ -1,7 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Airport } from 'src/airport/entities/airport.entity';
+import { User } from 'src/auth/entities/user.entity';
 import { FlightStaff } from 'src/flight/entities/flight_staff';
-import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

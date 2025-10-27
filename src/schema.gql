@@ -2,13 +2,158 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type FlightStaff {
+  flightId: ID!
+  staffId: ID!
+  assignedRoleOnFlight: String
+  flight: Flight!
+  staff: Staff!
+}
+
+type Staff {
+  id: ID!
+  employeeId: String!
+  name: String!
+  role: String!
+  user: User!
+  airport: Airport!
+  flightAssignments: [FlightStaff]
+}
+
+type User {
+  id: ID!
+  email: String!
+  role: String!
+  staff: Staff
+  passenger: Passenger
+}
+
+type Passenger {
+  id: ID!
+  passportNumber: String!
+  name: String!
+  nationality: String
+  user: User!
+  bookings: [Booking]
+}
+
+type Booking {
+  id: ID!
+  seatNumber: String!
+  bookingDate: DateTime!
+  passenger: Passenger!
+  flight: Flight!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Flight {
+  id: ID!
+  flightNumber: String!
+  airline: String!
+  departureTime: DateTime!
+  arrivalTime: DateTime!
+  availableSeats: Float!
+  status: String!
+  departureAirport: Airport!
+  destinationAirport: Airport!
+  bookings: [Booking]
+  staffAssignments: [FlightStaff]
+}
+
+type Airport {
+  id: ID!
+  code: String!
+  name: String!
+  city: String
+  departingFlights: [Flight!]
+  arrivingFlights: [Flight!]
+  staff: [Staff!]
+}
+
+type PaginatedAirportResponse {
+  items: [Airport!]!
+  totalCount: Int!
+  totalPages: Int!
+  currentPage: Int!
+}
+
+type PaginatedFlightResponse {
+  items: [Flight!]!
+  totalCount: Int!
+  totalPages: Int!
+  currentPage: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
   publicHello: String!
   me: String!
   adminOnly: String!
   userArea: String!
+  airports(pagination: PaginationInput): PaginatedAirportResponse!
+  airport(id: ID!): Airport!
+  flights(pagination: PaginationInput, filter: FlightFilterInput): PaginatedFlightResponse!
+  flight(id: ID!): Flight!
+}
+
+input PaginationInput {
+  page: Int! = 1
+  limit: Int! = 10
+}
+
+input FlightFilterInput {
+  airline: String
+  destination: String
+  departureAfter: DateTime
+  departureBefore: DateTime
 }
 
 type Mutation {
   login(username: String!): String!
+  createAirport(input: CreateAirportInput!): Airport!
+  updateAirport(input: UpdateAirportInput!): Airport!
+  removeAirport(id: ID!): Boolean!
+  createFlight(input: CreateFlightInput!): Flight!
+  updateFlight(input: UpdateFlightInput!): Flight!
+  removeFlight(id: ID!): Boolean!
+}
+
+input CreateAirportInput {
+  code: String!
+  name: String!
+  city: String
+}
+
+input UpdateAirportInput {
+  code: String
+  name: String
+  city: String
+  id: ID!
+}
+
+input CreateFlightInput {
+  flightNumber: String!
+  airline: String!
+  departureTime: DateTime!
+  arrivalTime: DateTime!
+  availableSeats: Float!
+  status: String!
+  departureAirportId: ID!
+  destinationAirportId: ID!
+}
+
+input UpdateFlightInput {
+  flightNumber: String
+  airline: String
+  departureTime: DateTime
+  arrivalTime: DateTime
+  availableSeats: Float
+  status: String
+  departureAirportId: ID
+  destinationAirportId: ID
+  id: ID!
 }

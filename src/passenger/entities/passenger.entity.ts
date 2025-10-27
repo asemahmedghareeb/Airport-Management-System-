@@ -1,6 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { User } from 'src/auth/entities/user.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
-import { User } from 'src/user/entities/user.entity';
+
 import {
   Entity,
   PrimaryGeneratedColumn,

@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { Booking } from './entities/booking.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BookingService {
+  constructor(
+    @InjectRepository(Booking)
+    private readonly bookingRepository: Repository<Booking>,
+  ) {}
+
   create(createBookingInput) {
     return 'This action adds a new booking';
   }
@@ -20,5 +28,9 @@ export class BookingService {
 
   remove(id: number) {
     return `This action removes a #${id} booking`;
+  }
+
+  findByFlight(id: string): Promise<Booking[]> {
+    return this.bookingRepository.find({ where: { flight: { id } } });
   }
 }

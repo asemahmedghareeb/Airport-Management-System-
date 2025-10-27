@@ -6,3 +6,4 @@ import { PassengerResolver } from './passenger.resolver';
   providers: [PassengerResolver, PassengerService],
 })
 export class PassengerModule {}
+ 
