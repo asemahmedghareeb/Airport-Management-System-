@@ -89,6 +89,12 @@ type PaginatedFlightResponse {
   hasNextPage: Boolean!
 }
 
+type PaginatedStaff {
+  items: [Staff!]!
+  totalItems: Int!
+  totalPages: Int!
+}
+
 type AuthResponse {
   accessToken: String!
   user: User!
@@ -99,6 +105,18 @@ type Query {
   airport(id: ID!): Airport!
   flights(pagination: PaginationInput, filter: FlightFilterInput): PaginatedFlightResponse!
   flight(id: ID!): Flight!
+
+  """Retrieve all staff with pagination and filters (Admin/Staff only)"""
+  staffMembers(pagination: PaginationInput, filter: StaffFilterInput): PaginatedStaff!
+
+  """Retrieve a single staff member by ID"""
+  staffMember(id: ID!): Staff!
+
+  """Find all staff assigned to a specific airport (Admin/Staff only)"""
+  staffByAirport(airportId: ID!): [Staff!]!
+
+  """Find all staff assigned to a specific flight (Admin/Staff only)"""
+  staffByFlight(flightId: ID!): [Staff!]!
 }
 
 input PaginationInput {
@@ -113,6 +131,12 @@ input FlightFilterInput {
   departureBefore: DateTime
 }
 
+input StaffFilterInput {
+  name: String
+  employeeId: String
+  role: String
+}
+
 type Mutation {
   registerPassenger(input: RegisterPassengerInput!): AuthResponse!
   registerStaff(input: RegisterStaffInput!): AuthResponse!
@@ -123,6 +147,15 @@ type Mutation {
   createFlight(input: CreateFlightInput!): Flight!
   updateFlight(input: UpdateFlightInput!): Flight!
   removeFlight(id: ID!): Boolean!
+
+  """Update a staff member (Admin only)"""
+  updateStaff(input: UpdateStaffInput!): Staff!
+
+  """Delete a staff member and their associated user account (Admin only)"""
+  deleteStaff(id: ID!): Staff!
+
+  """Assign a staff member to a flight (Admin/Staff only)"""
+  assignStaffToFlight(input: AssignStaffToFlightInput!): FlightStaff!
 }
 
 input RegisterPassengerInput {
@@ -186,4 +219,19 @@ input UpdateFlightInput {
   departureAirportId: ID
   destinationAirportId: ID
   id: ID!
+}
+
+input UpdateStaffInput {
+  id: ID!
+  name: String
+  role: String
+
+  """New Airport ID if base assignment changes"""
+  airportId: ID
+}
+
+input AssignStaffToFlightInput {
+  staffId: ID!
+  flightId: ID!
+  assignedRoleOnFlight: String!
 }

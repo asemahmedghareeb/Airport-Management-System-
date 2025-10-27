@@ -26,7 +26,7 @@ export class Staff {
   @Column()
   name: string;
 
-  @Field()
+  @Field() 
   @Column()
   role: string; // e.g., "Pilot", "Crew", "Security"
 
