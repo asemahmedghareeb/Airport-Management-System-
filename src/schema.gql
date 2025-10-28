@@ -95,6 +95,18 @@ type PaginatedStaff {
   totalPages: Int!
 }
 
+type PaginatedBooking {
+  items: [Booking!]!
+  totalItems: Int!
+  totalPages: Int!
+}
+
+type PaginatedPassenger {
+  items: [Passenger!]!
+  totalItems: Int!
+  totalPages: Int!
+}
+
 type AuthResponse {
   accessToken: String!
   user: User!
@@ -117,6 +129,26 @@ type Query {
 
   """Find all staff assigned to a specific flight (Admin/Staff only)"""
   staffByFlight(flightId: ID!): [Staff!]!
+
+  """Retrieve a single booking by ID (Admin/Passenger self-lookup)"""
+  booking(id: ID!): Booking!
+
+  """Retrieve all bookings with pagination (Admin only)"""
+  bookings(pagination: PaginationInput): PaginatedBooking!
+
+  """
+  Retrieve all bookings and flight details for a passenger (Passenger self-lookup)
+  """
+  myBookings(
+    """The ID of the passenger."""
+    passengerId: ID!
+  ): [Booking!]!
+
+  """Retrieve all passengers with pagination and filters (Admin/Staff only)"""
+  passengers(pagination: PaginationInput, filter: PassengerFilterInput): PaginatedPassenger!
+
+  """Retrieve a single passenger by ID (Admin/Passenger self-lookup)"""
+  passenger(id: ID!): Passenger!
 }
 
 input PaginationInput {
@@ -135,6 +167,12 @@ input StaffFilterInput {
   name: String
   employeeId: String
   role: String
+}
+
+input PassengerFilterInput {
+  name: String
+  passportNumber: String
+  nationality: String
 }
 
 type Mutation {
@@ -156,6 +194,23 @@ type Mutation {
 
   """Assign a staff member to a flight (Admin/Staff only)"""
   assignStaffToFlight(input: AssignStaffToFlightInput!): FlightStaff!
+
+  """Creates a new booking, checks for seat duplication (Passenger only)"""
+  bookFlight(input: BookFlightInput!): Booking!
+
+  """
+  Update a booking (e.g., change seat number) (Admin/Passenger self-update)
+  """
+  updateBooking(input: UpdateBookingInput!): Booking!
+
+  """Cancel a booking (Admin/Passenger self-delete)"""
+  deleteBooking(id: ID!): Booking!
+
+  """Update a passenger record (Admin/Passenger self-update)"""
+  updatePassenger(input: UpdatePassengerInput!): Passenger!
+
+  """Delete a passenger and their associated user account (Admin only)"""
+  deletePassenger(id: ID!): Passenger!
 }
 
 input RegisterPassengerInput {
@@ -234,4 +289,22 @@ input AssignStaffToFlightInput {
   staffId: ID!
   flightId: ID!
   assignedRoleOnFlight: String!
+}
+
+input BookFlightInput {
+  passengerId: ID
+  flightId: ID!
+  seatNumber: String!
+}
+
+input UpdateBookingInput {
+  id: ID!
+  seatNumber: String
+}
+
+input UpdatePassengerInput {
+  id: ID!
+  name: String
+  nationality: String
+  passportNumber: String
 }

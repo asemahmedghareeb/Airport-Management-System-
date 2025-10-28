@@ -69,10 +69,7 @@ export class FlightResolver {
   // 🧩 RESOLVE FIELDS
   // ==============
 
-  @ResolveField(() => Airport)
-  departureAirport(@Parent() flight: Flight): Promise<Airport> {
-    return this.airportService.findOne(flight.departureAirport?.id);
-  }
+
 
   @ResolveField(() => Airport)
   destinationAirport(@Parent() flight: Flight): Promise<Airport> {

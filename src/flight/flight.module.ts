@@ -12,8 +12,8 @@ import { Airport } from 'src/airport/entities/airport.entity';
   imports: [
     TypeOrmModule.forFeature([Flight, Airport]),
     forwardRef(() => StaffModule),
-    forwardRef(() => AirportModule), // ✅ and this
-    forwardRef(() => BookingModule), // ✅ and this
+    forwardRef(() => AirportModule), 
+    forwardRef(() => BookingModule),
   ],
   providers: [FlightService, FlightResolver],
   exports: [FlightService],
