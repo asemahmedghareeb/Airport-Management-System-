@@ -20,21 +20,18 @@ export class PassengerService {
     private passengerRepository: Repository<Passenger>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) {} // --- READ: Retrieve Single Passenger (Optimized) ---
 
-  // --- READ: Retrieve Single Passenger ---
   async findOne(id: string): Promise<Passenger> {
     const passenger = await this.passengerRepository.findOne({
       where: { id },
-      relations: ['user', 'bookings'], // Load user and bookings relations
     });
     if (!passenger) {
       throw new NotFoundException(`Passenger with ID "${id}" not found.`);
     }
     return passenger;
-  }
+  } // --- READ: Retrieve Passengers with Pagination and Filtering (Optimized) ---
 
-  // --- READ: Retrieve Passengers with Pagination and Filtering ---
   async findAll(
     pagination: PaginationInput,
     filter: PassengerFilterInput,
@@ -45,7 +42,7 @@ export class PassengerService {
 
     const query = this.passengerRepository
       .createQueryBuilder('passenger')
-      .leftJoinAndSelect('passenger.user', 'user');
+      .orderBy('passenger.name', 'ASC');
 
     if (name) {
       query.andWhere('passenger.name ILIKE :name', { name: `%${name}%` });
@@ -71,14 +68,12 @@ export class PassengerService {
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
     };
-  }
+  } // --- UPDATE: Modify Passenger Details (Unchanged) ---
 
-  // --- UPDATE: Modify Passenger Details ---
   async update(input: UpdatePassengerInput): Promise<Passenger> {
     const { id, ...updateFields } = input;
-    const passenger = await this.findOne(id);
+    const passenger = await this.findOne(id); // Check for passport number uniqueness (unchanged)
 
-    // Check if the new passport number (if provided) is already in use by another passenger
     if (
       updateFields.passportNumber &&
       updateFields.passportNumber !== passenger.passportNumber
@@ -93,28 +88,27 @@ export class PassengerService {
 
     Object.assign(passenger, updateFields);
     return this.passengerRepository.save(passenger);
-  }
+  } // --- DELETE: Remove Passenger Member (Unchanged) ---
 
-  // --- DELETE: Remove Passenger Member ---
   async delete(id: string): Promise<Passenger> {
-    // 1. Find the Passenger record (loads the user relationship if configured)
     const passenger = await this.findOne(id);
 
-    // Find the associated User record
-    // We use findOne to ensure the User entity is fully tracked by TypeORM before removal.
     const user = await this.userRepository.findOne({
       where: { passenger: { id } },
     });
 
-    // 2. *** CORRECT ORDER: Delete the User record FIRST ***
     if (user) {
       await this.userRepository.remove(user);
     }
 
-    // 3. Remove the Passenger record
-    // This will now succeed because the dependent User record (with the FK) is gone.
     await this.passengerRepository.remove(passenger);
 
     return passenger;
+  } // 💡 NEW HELPER for Field Resolvers (Fixed to return null instead of throwing)
+  async findUserByPassengerId(passengerId: string): Promise<User | null> {
+    // Return null if not found. Let the resolver handle the null value.
+    return this.userRepository.findOne({
+      where: { passenger: { id: passengerId } },
+    });
   }
 }

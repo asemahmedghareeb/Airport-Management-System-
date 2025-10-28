@@ -125,74 +125,10 @@ export class BookingService {
     }
   }
 
-  // async bookFlight(input: BookFlightInput): Promise<Booking> {
-  //   const { passengerId, flightId, seatNumber } = input;
-
-  //   // 1. Validate Passenger and Flight existence
-  //   const [passenger, flight] = await Promise.all([
-  //     this.passengerRepository.findOne({ where: { id: passengerId } }),
-  //     this.flightRepository.findOne({ where: { id: flightId } }),
-  //   ]);
-
-  //   if (!passenger) {
-  //     throw new NotFoundException(
-  //       `Passenger with ID "${passengerId}" not found.`,
-  //     );
-  //   }
-  //   if (!flight) {
-  //     throw new NotFoundException(`Flight with ID "${flightId}" not found.`);
-  //   }
-
-  //   // Check if passenger already booked on this flight (Unique constraint passengerId + flightId)
-  //   const passengerAlreadyBooked = await this.bookingRepository.findOne({
-  //     where: { passenger: { id: passengerId }, flight: { id: flightId } },
-  //   });
-  //   if (passengerAlreadyBooked) {
-  //     throw new BadRequestException(
-  //       `Passenger has already booked a seat on flight ${flightId}.`,
-  //     );
-  //   }
-
-  //   // Check for duplicate seat assignment on this flight (Unique constraint seatNumber + flightId)
-  //   const duplicateSeat = await this.bookingRepository.findOne({
-  //     where: { flight: { id: flightId }, seatNumber },
-  //   });
-
-  //   if (duplicateSeat) {
-  //     throw new BadRequestException(
-  //       `Seat ${seatNumber} is already booked on flight ${flightId}.`,
-  //     );
-  //   }
-
-  //   // Check if the flight is fully booked
-  //   const bookedCount = await this.bookingRepository.count({
-  //     where: { flight: { id: flightId } },
-  //   });
-  //   if (bookedCount >= flight.availableSeats) {
-  //     throw new BadRequestException('This flight is fully booked.');
-  //   }
-
-  //   // 3. Create and save the booking
-  //   const newBooking = this.bookingRepository.create({
-  //     passenger,
-  //     flight,
-  //     seatNumber,
-  //   });
-
-  //   // Decrement available seats count on the Flight entity:
-  //   if (flight.availableSeats > 0) {
-  //     flight.availableSeats -= 1;
-  //     await this.flightRepository.save(flight);
-  //   }
-
-  //   return this.bookingRepository.save(newBooking);
-  // } 
-
   // --- CRUD: Find One ---
   async findOne(id: string): Promise<Booking> {
     const booking = await this.bookingRepository.findOne({
       where: { id },
-      relations: ['passenger', 'flight'],
     });
     if (!booking) {
       throw new NotFoundException(`Booking with ID "${id}" not found.`);
@@ -207,8 +143,7 @@ export class BookingService {
 
     const [items, totalItems] = await this.bookingRepository.findAndCount({
       skip,
-      take: limit,
-      relations: ['passenger', 'flight'],
+      take: limit, 
     });
 
     return {
@@ -217,7 +152,6 @@ export class BookingService {
       totalPages: Math.ceil(totalItems / limit),
     };
   }
-
   // --- CRUD: Update Booking (Change Seat Number) ---
   async updateBooking(input: UpdateBookingInput): Promise<Booking> {
     const booking = await this.findOne(input.id);
@@ -242,26 +176,24 @@ export class BookingService {
   }
 
   // --- CRUD: Delete Booking ---
-// src/booking/booking.service.ts
+  // src/booking/booking.service.ts
 
-async deleteBooking(id: string): Promise<Booking> {
+  async deleteBooking(id: string): Promise<Booking> {
     const booking = await this.findOne(id);
-   
-    const deletedBookingData = { ...booking }; 
+
+    const deletedBookingData = { ...booking };
     const flight = deletedBookingData.flight;
     flight.availableSeats += 1;
     await this.flightRepository.save(flight);
     await this.bookingRepository.remove(booking);
-    
+
     return deletedBookingData as Booking;
-}
+  }
 
   // --- Query: Allow passengers to check flight details (Requirement 2) ---
   async findBookingsByPassenger(passengerId: string): Promise<Booking[]> {
-    // Should add a check to ensure passenger exists here.
     const bookings = await this.bookingRepository.find({
-      where: { passenger: { id: passengerId } },
-      relations: ['flight', 'passenger'],
+      where: { passenger: { id: passengerId } }, 
       order: { bookingDate: 'DESC' },
     });
     return bookings;

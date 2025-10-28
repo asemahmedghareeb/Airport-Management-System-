@@ -22,11 +22,11 @@ export class FlightService {
     const departureAirport = await this.airportRepo.findOneBy({
       id: input.departureAirportId,
     });
-    if (!departureAirport) throw new Error('Departure airport not found');
+    if (!departureAirport) throw new NotFoundException('Departure airport not found');
     const destinationAirport = await this.airportRepo.findOneBy({
       id: input.destinationAirportId,
     });
-    if (!destinationAirport) throw new Error('Destination airport not found');
+    if (!destinationAirport) throw new NotFoundException('Destination airport not found');
 
     const flight = this.flightRepo.create({
       ...input,
@@ -42,7 +42,7 @@ export class FlightService {
       where: { id },
       relations: ['departureAirport', 'destinationAirport'],
     });
-    if (!flight) throw new Error('Flight not found');
+    if (!flight) throw new NotFoundException('Flight not found');
 
     Object.assign(flight, {
       flightNumber: input.flightNumber ?? flight.flightNumber,
@@ -57,7 +57,7 @@ export class FlightService {
       const departureAirport = await this.airportRepo.findOneBy({
         id: input.departureAirportId,
       });
-      if (!departureAirport) throw new Error('Departure airport not found');
+      if (!departureAirport) throw new NotFoundException('Departure airport not found');
       flight.departureAirport = departureAirport;
     }
 
@@ -65,7 +65,7 @@ export class FlightService {
       const destinationAirport = await this.airportRepo.findOneBy({
         id: input.destinationAirportId,
       });
-      if (!destinationAirport) throw new Error('Destination airport not found');
+      if (!destinationAirport) throw new NotFoundException('Destination airport not found');
       flight.destinationAirport = destinationAirport;
     }
 
@@ -137,14 +137,9 @@ export class FlightService {
   async findOne(id: string): Promise<Flight> {
     const flight = await this.flightRepo.findOne({
       where: { id },
-      relations: [
-        'departureAirport',
-        'destinationAirport',
-        'bookings',
-        'staffAssignments',
-      ],
+
     });
-    if (!flight) throw new Error('Flight not found');
+    if (!flight) throw new NotFoundException('Flight not found');
     return flight;
   }
 

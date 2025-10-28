@@ -1,19 +1,31 @@
-import { Resolver, Mutation, Query, Args, ID } from '@nestjs/graphql';
+import {
+  Resolver,
+  Mutation,
+  Query,
+  Args,
+  ID,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { BookingService } from './booking.service';
 import { Booking } from './entities/booking.entity';
 import { PaginationInput } from 'src/common/pagination.input';
 import { BookFlightInput, UpdateBookingInput } from './dto/BookFlightInput.dto';
 import { PaginatedBooking } from './dto/paginatedBooking.dto';
-
-// NOTE: Apply Authorization Guards (e.g., @Roles(Role.Passenger)) to these methods
+import { Flight } from 'src/flight/entities/flight.entity';
+import { FlightService } from 'src/flight/flight.service';
+import { Passenger } from 'src/passenger/entities/passenger.entity';
+import { PassengerService } from 'src/passenger/passenger.service';
 
 @Resolver(() => Booking)
 export class BookingResolver {
-  constructor(private readonly bookingService: BookingService) {}
+  constructor(
+    private readonly bookingService: BookingService, // These services are injected for use in the Field Resolvers below
+    private readonly flightService: FlightService,
+    private readonly passengerService: PassengerService,
+  ) {} // --- MUTATIONS ---
+  // (Mutations remain unchanged as they only call service methods)
 
-  // --- MUTATIONS ---
-  
-  // NOTE => // In a real app, this should fetch the passengerId from the JWT context
   @Mutation(() => Booking, {
     name: 'bookFlight',
     description:
@@ -38,9 +50,8 @@ export class BookingResolver {
   })
   deleteBooking(@Args('id', { type: () => ID }) id: string): Promise<Booking> {
     return this.bookingService.deleteBooking(id);
-  }
-
-  // --- QUERIES ---
+  } // --- QUERIES ---
+  // (Queries remain unchanged as they only call service methods)
 
   @Query(() => Booking, {
     name: 'booking',
@@ -62,8 +73,6 @@ export class BookingResolver {
     return this.bookingService.findAll(pagination);
   }
 
-
-  // NOTE => // In a real app, this should fetch the passengerId from the JWT context
   @Query(() => [Booking], {
     name: 'myBookings',
     description:
@@ -76,7 +85,21 @@ export class BookingResolver {
     })
     passengerId: string,
   ): Promise<Booking[]> {
-    // In a real app, this should fetch the passengerId from the JWT context
     return this.bookingService.findBookingsByPassenger(passengerId);
+  } // --- FIELD RESOLVERS (N+1 Issue is here) ---
+  // The resolver is updated to use the foreign key IDs.
+
+  @ResolveField(() => Flight)
+  flight(@Parent() booking: Booking): Promise<Flight> {
+    // 💥 FIX: Use the explicit foreign key ID
+    // if (!booking.flightId) return null; // Defensive check
+    return this.flightService.findOne(booking.flightId);
+  }
+
+  @ResolveField(() => Passenger)
+  passenger(@Parent() booking: Booking): Promise<Passenger> {
+    // 💥 FIX: Use the explicit foreign key ID
+    // if (!booking.passengerId) return null; // Defensive check
+    return this.passengerService.findOne(booking.passengerId);
   }
 }

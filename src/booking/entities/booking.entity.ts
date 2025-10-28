@@ -1,13 +1,15 @@
+
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique } from 'typeorm';
+// Import JoinColumn decorator
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, JoinColumn } from 'typeorm';
 
-@ObjectType() // 👈 Expose this entity as a GraphQL type
+@ObjectType()
 @Entity('bookings')
-@Unique(['flight', 'seatNumber']) // Enforce unique seat per flight
+@Unique(['flightId', 'seatNumber']) // 👈 Changed to use the column name
 export class Booking {
-  @Field(() => ID) // 👈 GraphQL ID
+  @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -15,18 +17,30 @@ export class Booking {
   @Column()
   seatNumber: string;
 
-  @Field() // Expose bookingDate to GraphQL
+  @Field()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
 
+  // --- EXPLICIT FOREIGN KEY COLUMNS ---
+
+  // NOTE: We don't necessarily expose these to GraphQL, so no @Field() needed
+  @Column({ type: 'uuid' }) 
+  passengerId: string; 
+
+  @Column({ type: 'uuid' }) 
+  flightId: string;
+
   // 🧩 Relationships
 
-  @Field(() => Passenger) // 👈 GraphQL knows Booking → Passenger relation
+  @Field(() => Passenger)
   @ManyToOne(() => Passenger, passenger => passenger.bookings)
+  // Optional: Use JoinColumn to map the relation to the explicit column
+  @JoinColumn({ name: 'passengerId' }) 
   passenger: Passenger;
 
-  @Field(() => Flight) // 👈 GraphQL knows Booking → Flight relation
+  @Field(() => Flight)
   @ManyToOne(() => Flight, flight => flight.bookings)
+  @JoinColumn({ name: 'flightId' })
   flight: Flight;
 }
 
@@ -37,29 +51,3 @@ export class Booking {
 
 
 
-
-// // src/booking/booking.entity.ts
-// import { Flight } from 'src/flight/entities/flight.entity';
-// import { Passenger } from 'src/passenger/entities/passenger.entity';
-// import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique } from 'typeorm';
-
-
-// @Entity('bookings')
-// @Unique(['flight', 'seatNumber']) // Enforces unique seat allocation per flight
-// export class Booking {
-//   @PrimaryGeneratedColumn('uuid')
-//   id: string;
-
-//   @Column()
-//   seatNumber: string;
-
-//   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-//   bookingDate: Date;
-
-//   // Relationships
-//   @ManyToOne(() => Passenger, passenger => passenger.bookings)
-//   passenger: Passenger;
-
-//   @ManyToOne(() => Flight, flight => flight.bookings)
-//   flight: Flight;
-// }

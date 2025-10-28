@@ -69,11 +69,18 @@ export class FlightResolver {
   // 🧩 RESOLVE FIELDS
   // ==============
 
-
+  @ResolveField(() => Airport)
+  departureAirport(@Parent() flight: Flight): Promise<Airport> | null {
+    // 💡 FIX: Use the explicit foreign key property
+    if (!flight.departureAirportId) return null;
+    return this.airportService.findOne(flight.departureAirportId);
+  } // ✅ Resolve Destination Airport
 
   @ResolveField(() => Airport)
-  destinationAirport(@Parent() flight: Flight): Promise<Airport> {
-    return this.airportService.findOne(flight.destinationAirport?.id);
+  destinationAirport(@Parent() flight: Flight): Promise<Airport> | null {
+    // 💡 FIX: Use the explicit foreign key property
+    if (!flight.destinationAirportId) return null;
+    return this.airportService.findOne(flight.destinationAirportId);
   }
 
   @ResolveField(() => [Booking], { nullable: true })

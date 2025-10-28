@@ -9,6 +9,7 @@ import {
   OneToOne,
   ManyToOne,
   OneToMany,
+  JoinColumn, // 👈 Import JoinColumn
 } from 'typeorm';
 
 @ObjectType() // Expose this entity as a GraphQL type
@@ -26,63 +27,27 @@ export class Staff {
   @Column()
   name: string;
 
-  @Field() 
+  @Field()
   @Column()
-  role: string; // e.g., "Pilot", "Crew", "Security"
+  role: string; // === EXPLICIT FOREIGN KEY COLUMNS ===
 
+  @Column({ type: 'uuid' }) // Assuming mandatory OneToOne
+  userId: string;
+
+  @Column({ type: 'uuid' }) // Assuming mandatory ManyToOne
+  airportId: string; // ====================================
   // === Relationships ===
-
   @Field(() => User)
   @OneToOne(() => User, (user) => user.staff, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' }) // 👈 Link to the new column
   user: User;
 
   @Field(() => Airport)
   @ManyToOne(() => Airport, (airport) => airport.staff)
+  @JoinColumn({ name: 'airportId' }) // 👈 Link to the new column
   airport: Airport;
 
   @Field(() => [FlightStaff], { nullable: 'itemsAndList' })
   @OneToMany(() => FlightStaff, (flightStaff) => flightStaff.staff)
   flightAssignments: FlightStaff[];
 }
-
-
-
-
-
-// import { Airport } from 'src/airport/entities/airport.entity';
-// import { FlightStaff } from 'src/flight/entities/flight_staff';
-// import { User } from 'src/user/entities/user.entity';
-// import {
-//   Entity,
-//   PrimaryGeneratedColumn,
-//   Column,
-//   OneToOne,
-//   ManyToOne,
-//   OneToMany,
-// } from 'typeorm'; // Removed ManyToMany
-
-
-// @Entity('staff')
-// export class Staff {
-//   @PrimaryGeneratedColumn('uuid')
-//   id: string;
-
-//   @Column({ unique: true })
-//   employeeId: string;
-
-//   @Column()
-//   name: string;
-
-//   @Column()
-//   role: string; // pilot, crew, security, etc.
-//   // Relationships
-
-//   @OneToOne(() => User, (user) => user.staff, { onDelete: 'CASCADE' })
-//   user: User;
-
-//   @ManyToOne(() => Airport, (airport) => airport.staff)
-//   airport: Airport; // CORRECTED: N:M relationship is now 1:N to the join table
-
-//   @OneToMany(() => FlightStaff, (flightStaff) => flightStaff.staff)
-//   flightAssignments: FlightStaff[]; // <-- This is the property that was missing!
-// }

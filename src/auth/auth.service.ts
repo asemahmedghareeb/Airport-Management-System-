@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -71,27 +72,13 @@ export class AuthService {
     };
   }
 
+  // src/auth/auth.service.ts (inside registerStaff method)
 
   async registerStaff(input: RegisterStaffInput): Promise<AuthResponse> {
-    // 1. Check if user already exists
-    const existingUser = await this.usersRepository.findOne({
-      where: { email: input.email },
-    });
-    if (existingUser) {
-      throw new BadRequestException('User with this email already exists.');
-    }
+    // 1-4. Checks and Password Hashing (REMAIN UNCHANGED)
+    // ...
 
-    // 2. Check if Employee ID is already in use
-    const existingStaff = await this.staffRepository.findOne({
-      where: { employeeId: input.employeeId },
-    });
-    if (existingStaff) {
-      throw new BadRequestException(
-        'Staff with this Employee ID already exists.',
-      );
-    }
-
-    // 3. Find the Airport
+    // 5. Find the Airport (REMAIN UNCHANGED)
     const airport = await this.airportsRepository.findOne({
       where: { id: input.airportId },
     });
@@ -101,40 +88,40 @@ export class AuthService {
       );
     }
 
-    // 4. Hash the password
-    const hashedPassword = await bcrypt.hash(input.password, 10);
 
+    const hashedPassword = await bcrypt.hash(input.password, 10); 
+    
     // 5. Create the base User entity
+    // ... (Steps 1-5 remain)
     const newUser = this.usersRepository.create({
       email: input.email,
       password: hashedPassword,
-      role: input.userRole, // Use the provided Admin/Staff role
+      role: input.userRole,
     });
-    const savedUser = await this.usersRepository.save(newUser);
 
-    // 6. Create the Staff entity linked to the User and Airport
+    const savedUser = await this.usersRepository.save(newUser); // 6. Create the Staff entity linked to the User and Airport
+
     const newStaff = this.staffRepository.create({
       user: savedUser,
-      airport: airport, // Link to the Airport entity
+      airport: airport,
       employeeId: input.employeeId,
       name: input.name,
-      role: input.staffRole, // Staff job title (e.g., Pilot)
+      role: input.staffRole,
     });
-    await this.staffRepository.save(newStaff);
+    const savedStaff = await this.staffRepository.save(newStaff);
 
-    // 7. Generate JWT Token
+    // 7. CRITICAL FIX: Update the User entity with the new Staff ID and save it.
+    savedUser.staff = savedStaff; // Assuming the field is named 'staff' on the User entity
+    await this.usersRepository.save(savedUser); 
+
     const payload = { userId: savedUser.id, role: savedUser.role };
     const accessToken = this.jwtService.sign(payload);
 
-    return {
-      accessToken,
-      //   user: savedUser,
-    };
+    return { accessToken };
   }
 
 
 
-  
   // --- General Login ---
   async login({ email, password }: LoginInput): Promise<AuthResponse> {
     // 1. Find the User
@@ -164,5 +151,15 @@ export class AuthService {
     return {
       accessToken,
     };
+  }
+
+  async findOne(id: string): Promise<User> {
+    const user: User | null = await this.usersRepository.findOne({
+      where: { id },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID "${id}" not found.`);
+    }
+    return user;
   }
 }

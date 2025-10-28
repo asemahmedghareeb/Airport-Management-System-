@@ -1,4 +1,12 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { StaffService } from './staff.service';
 import { Staff } from './entities/staff.entity';
 import { FlightStaff } from '../flight/entities/flight_staff';
@@ -8,12 +16,18 @@ import { StaffFilterInput } from './dto/staffFilterInput.dto';
 import { UpdateStaffInput } from './dto/UpdateStaffInput.dto';
 import { AssignStaffToFlightInput } from './dto/assignStaffToFlightInput';
 
-// IMPORTANT: Apply Authorization Guards here (e.g., @Roles(Role.Admin)) to restrict access
+import { User } from 'src/auth/entities/user.entity'; // For ResolveField
+import { Airport } from 'src/airport/entities/airport.entity'; // For ResolveField
+import { NotFoundException } from '@nestjs/common';
+
 @Resolver(() => Staff)
 export class StaffResolver {
-  constructor(private readonly staffService: StaffService) {}
-
-  // --- QUERIES (READ) ---
+  constructor(
+    private readonly staffService: StaffService, 
+    // You should inject UserService and AirportService here instead of relying solely on StaffService helpers
+    // private readonly userService: UserService,
+    // private readonly airportService: AirportService,
+  ) {} // --- QUERIES (READ) and MUTATIONS (Unchanged) ---
 
   @Query(() => PaginatedStaff, {
     name: 'staffMembers',
@@ -36,18 +50,27 @@ export class StaffResolver {
     return this.staffService.findOne(id);
   }
 
-
-  @Query(() => [Staff], { name: 'staffByAirport', description: 'Find all staff assigned to a specific airport (Admin/Staff only)' })
-  staffByAirport(@Args('airportId', { type: () => ID }) airportId: string): Promise<Staff[]> {
+  @Query(() => [Staff], {
+    name: 'staffByAirport',
+    description:
+      'Find all staff assigned to a specific airport (Admin/Staff only)',
+  })
+  staffByAirport(
+    @Args('airportId', { type: () => ID }) airportId: string,
+  ): Promise<Staff[]> {
     return this.staffService.findByAirport(airportId);
   }
 
-  @Query(() => [Staff], { name: 'staffByFlight', description: 'Find all staff assigned to a specific flight (Admin/Staff only)' })
-  staffByFlight(@Args('flightId', { type: () => ID }) flightId: string): Promise<Staff[]> {
+  @Query(() => [Staff], {
+    name: 'staffByFlight',
+    description:
+      'Find all staff assigned to a specific flight (Admin/Staff only)',
+  })
+  staffByFlight(
+    @Args('flightId', { type: () => ID }) flightId: string,
+  ): Promise<Staff[]> {
     return this.staffService.findByFlight(flightId);
   }
-
-  // --- MUTATIONS ---
 
   @Mutation(() => Staff, { description: 'Update a staff member (Admin only)' })
   updateStaff(@Args('input') input: UpdateStaffInput): Promise<Staff> {
@@ -69,5 +92,26 @@ export class StaffResolver {
     @Args('input') input: AssignStaffToFlightInput,
   ): Promise<FlightStaff> {
     return this.staffService.assignToFlight(input);
+  }
+
+  // --- FIELD RESOLVERS ---
+
+  @ResolveField(() => User)
+  user(@Parent() staff: Staff): Promise<User | null> {
+    // Uses the explicit foreign key to fetch the User
+    return this.staffService.findUserByStaffId(staff.userId);
+  }
+
+  @ResolveField(() => Airport)
+  airport(@Parent() staff: Staff): Promise<Airport | null> {
+    // Uses the explicit foreign key to fetch the Airport
+
+    return this.staffService.findAirportByStaffId(staff.airportId);
+  }
+
+  @ResolveField(() => [FlightStaff], { nullable: true })
+  flightAssignments(@Parent() staff: Staff): Promise<FlightStaff[]> {
+    // Uses the primary key to fetch assignments
+    return this.staffService.findFlightAssignmentsByStaffId(staff.id);
   }
 }

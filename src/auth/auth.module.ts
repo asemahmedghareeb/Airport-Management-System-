@@ -11,5 +11,6 @@ import { Airport } from 'src/airport/entities/airport.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([User, Passenger, Staff, Airport])],
   providers: [AuthResolver, AuthService, CaslAbilityFactory],
+  exports:[AuthService]
 })
 export class AuthModule {}
