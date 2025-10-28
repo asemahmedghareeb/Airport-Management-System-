@@ -13,7 +13,7 @@ import { BookingModule } from 'src/booking/booking.module';
     AuthModule,
     forwardRef(() => BookingModule),
   ],
-  providers: [PassengerResolver, PassengerService],
+  providers: [PassengerResolver, PassengerService,],
   exports: [PassengerService],
 })
 export class PassengerModule {}

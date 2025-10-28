@@ -14,7 +14,6 @@ import { User } from 'src/auth/entities/user.entity';
   imports: [
     forwardRef(() => FlightModule),
     forwardRef(() => AirportModule),
-    forwardRef(() => AirportModule),
     TypeOrmModule.forFeature([Staff, FlightStaff, Flight, Airport,User]),
   ],
   exports: [StaffService],
