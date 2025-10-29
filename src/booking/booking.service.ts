@@ -199,9 +199,9 @@ export class BookingService {
     return bookings;
   }
 
-  async findByFlight(id: string): Promise<Booking[]> {
-    return this.bookingRepository.find({ where: { flight: { id } } });
-  }
+  // async findByFlight(id: string): Promise<Booking[]> {
+  //   return this.bookingRepository.find({ where: { flight: { id } } });
+  // }
 
   findByFlightIds(flightIds: string[]): Promise<Booking[]> {
     return this.bookingRepository.find({

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Flight } from './entities/flight.entity';
@@ -150,17 +146,17 @@ export class FlightService {
   }
 
   // Helpers for AirportResolver
-  findDepartingFlights(airportId: string) {
-    return this.flightRepo.find({
-      where: { departureAirport: { id: airportId } },
-    });
-  }
+  // findDepartingFlights(airportId: string) {
+  //   return this.flightRepo.find({
+  //     where: { departureAirport: { id: airportId } },
+  //   });
+  // }
 
-  findArrivingFlights(airportId: string) {
-    return this.flightRepo.find({
-      where: { destinationAirport: { id: airportId } },
-    });
-  }
+  // findArrivingFlights(airportId: string) {
+  //   return this.flightRepo.find({
+  //     where: { destinationAirport: { id: airportId } },
+  //   });
+  // }
 
   async findByDepartureAirportIds(airportIds: string[]): Promise<Flight[]> {
     return this.flightRepo.find({
@@ -177,7 +173,6 @@ export class FlightService {
       },
     });
   }
-
 
   async findByIds(ids: string[]): Promise<Flight[]> {
     return this.flightRepo.find({

@@ -53,10 +53,6 @@ export class AirportService {
   }
 
   async findOne(id: string): Promise<Airport> {
-    // const airport = await this.airportRepository.findOne({
-    //   where: { id },
-    //   relations: ['departingFlights', 'arrivingFlights', 'staff'],
-    // });
     const airport = await this.airportRepository.findOne({ where: { id } });
     if (!airport) throw new NotFoundException(`Airport ${id} not found`);
     return airport;

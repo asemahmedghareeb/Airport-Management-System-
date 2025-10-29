@@ -15,22 +15,14 @@ import { PaginationInput } from 'src/common/pagination.input';
 import { StaffFilterInput } from './dto/staffFilterInput.dto';
 import { UpdateStaffInput } from './dto/UpdateStaffInput.dto';
 import { AssignStaffToFlightInput } from './dto/assignStaffToFlightInput';
-
-import { User } from 'src/auth/entities/user.entity'; // For ResolveField
-import { Airport } from 'src/airport/entities/airport.entity'; // For ResolveField
-import { NotFoundException } from '@nestjs/common';
+import { User } from 'src/auth/entities/user.entity'; 
+import { Airport } from 'src/airport/entities/airport.entity'; 
 import DataLoader from 'dataloader';
 import { Loader } from 'src/dataloader/decorators/loader.decorator';
 
 @Resolver(() => Staff)
 export class StaffResolver {
-  constructor(
-    private readonly staffService: StaffService,
-    // You should inject UserService and AirportService here instead of relying solely on StaffService helpers
-    // private readonly userService: UserService,
-    // private readonly airportService: AirportService,
-  ) {} // --- QUERIES (READ) and MUTATIONS (Unchanged) ---
-
+  constructor(private readonly staffService: StaffService) {}
   @Query(() => PaginatedStaff, {
     name: 'staffMembers',
     description:

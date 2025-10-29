@@ -105,12 +105,12 @@ export class PassengerService {
 
     return passenger;
   } // 💡 NEW HELPER for Field Resolvers (Fixed to return null instead of throwing)
-  async findUserByPassengerId(passengerId: string): Promise<User | null> {
-    // Return null if not found. Let the resolver handle the null value.
-    return this.userRepository.findOne({
-      where: { passenger: { id: passengerId } },
-    });
-  }
+  // async findUserByPassengerId(passengerId: string): Promise<User | null> {
+  //   // Return null if not found. Let the resolver handle the null value.
+  //   return this.userRepository.findOne({
+  //     where: { passenger: { id: passengerId } },
+  //   });
+  // }
 
   async findByIds(ids: string[]): Promise<Passenger[]> {
     return await this.passengerRepository.find({ where: { id: In(ids) } });

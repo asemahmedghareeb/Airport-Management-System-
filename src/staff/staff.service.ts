@@ -37,9 +37,8 @@ export class StaffService {
     const skip = (page - 1) * limit;
 
     const query = this.staffRepository
-      .createQueryBuilder('staff') // ❌ REMOVED: .leftJoinAndSelect('staff.airport', 'airport')
-      // ❌ REMOVED: .leftJoinAndSelect('staff.user', 'user')
-      .orderBy('staff.name', 'ASC'); // ... Filtering conditions remain the same ...
+      .createQueryBuilder('staff') 
+      .orderBy('staff.name', 'ASC'); 
 
     if (name) {
       query.andWhere('staff.name ILIKE :name', { name: `%${name}%` });
@@ -61,19 +60,20 @@ export class StaffService {
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
     };
-  } // --- READ: Retrieve Single Staff Member ---
+  } 
 
   async findOne(id: string): Promise<Staff> {
     const staffMember = await this.staffRepository.findOne({
-      where: { id }, // ❌ REMOVED: relations: ['airport', 'user', 'flightAssignments.flight'],
+      where: { id }, 
     });
     if (!staffMember) {
       throw new NotFoundException(`Staff member with ID "${id}" not found.`);
     }
     return staffMember;
-  } // --- UPDATE: Modify Staff Details ---
+  } 
+
   async update(input: UpdateStaffInput): Promise<Staff> {
-    const { id, airportId, ...updateFields } = input; // We must fetch the staff member, but without eager relations for performance
+    const { id, airportId, ...updateFields } = input;
     const staff = await this.staffRepository.findOneBy({ id });
     if (!staff) {
       throw new NotFoundException(`Staff member with ID "${id}" not found.`);
@@ -85,22 +85,22 @@ export class StaffService {
         throw new NotFoundException(
           `Airport with ID "${airportId}" not found.`,
         );
-      } // 💡 Assigning the entity will update the airportId foreign key automatically
+      }
       staff.airport = airport;
     }
 
     Object.assign(staff, updateFields);
     return this.staffRepository.save(staff);
-  } // --- DELETE: Remove Staff Member ---
+  }
 
   async delete(id: string): Promise<Staff> {
-    // Fetch staff member to return it, no relations needed here
+   
     const staff = await this.staffRepository.findOneBy({ id });
     if (!staff) {
       throw new NotFoundException(`Staff member with ID "${id}" not found.`);
     }
 
-    // Explicitly delete the linked user account using the foreign key
+
     const user = await this.userRepository.findOneBy({
       staff: { id: staff.id },
     });
@@ -108,13 +108,13 @@ export class StaffService {
       await this.userRepository.remove(user);
     }
 
-    // Delete the Staff record
+
     await this.staffRepository.remove(staff);
     return staff;
-  } // --- ASSIGNMENT: Assign Staff to a Flight (Logic remains sound) ---
+  }
 
   async assignToFlight(input: AssignStaffToFlightInput): Promise<FlightStaff> {
-    const { staffId, flightId, assignedRoleOnFlight } = input; // Using findOneBy for cleaner fetching
+    const { staffId, flightId, assignedRoleOnFlight } = input; 
 
     const staff = await this.staffRepository.findOneBy({ id: staffId });
     if (!staff) {
@@ -126,7 +126,7 @@ export class StaffService {
     const flight = await this.flightRepository.findOneBy({ id: flightId });
     if (!flight) {
       throw new NotFoundException(`Flight with ID "${flightId}" not found.`);
-    } // ... existing assignment check remains the same ...
+    } 
 
     const existingAssignment = await this.flightStaffRepository.findOne({
       where: { staff: { id: staffId }, flight: { id: flightId } },
@@ -145,26 +145,26 @@ export class StaffService {
     });
 
     return this.flightStaffRepository.save(newAssignment);
-  } // --- READ: Find Staff by Airport (Optimized Fetching) ---
+  }   
 
   async findByAirport(airportId: string): Promise<Staff[]> {
-    // Only check for airport existence, don't fetch the whole object if possible
+    
     const airportExists = await this.airportRepository.count({
       where: { id: airportId },
     });
     if (airportExists === 0) {
       throw new NotFoundException(`Airport with ID "${airportId}" not found.`);
-    } // Find staff using the foreign key filter. No eager relations needed here.
+    } 
 
     const staff = await this.staffRepository.find({
-      where: { airportId }, // 💡 Use the explicit foreign key!
+      where: { airportId }, 
     });
 
     return staff;
-  } // --- READ: Find Staff by Flight (Helper for Resolver) ---
+  } 
 
   async findByFlight(flightId: string): Promise<Staff[]> {
-    // Fetch the join entities, eagerly load the Staff member
+    
     const flightStaff: FlightStaff[] = await this.flightStaffRepository.find({
       where: { flightId },
       relations: ['staff'],
@@ -172,23 +172,24 @@ export class StaffService {
     return flightStaff.map((fs) => fs.staff);
   }
 
-  // --- NEW HELPERS for Resolvers/DataLoaders ---
-  async findUserByStaffId(userId: string): Promise<User | null> {
-    // Assuming a dedicated UserService exists, but using UserRepository directly for now
-    return this.userRepository.findOneBy({ id: userId });
-  }
+  // // --- NEW HELPERS for Resolvers/DataLoaders ---
+  // async findUserByStaffId(userId: string): Promise<User | null> {
+  //   // Assuming a dedicated UserService exists, but using UserRepository directly for now
+  //   return this.userRepository.findOneBy({ id: userId });
+  // }
 
-  async findAirportByStaffId(airportId: string): Promise<Airport | null> {
-    return this.airportRepository.findOneBy({ id: airportId });
-  }
+  // async findAirportByStaffId(airportId: string): Promise<Airport | null> {
+  //   return this.airportRepository.findOneBy({ id: airportId });
+  // }
 
-  async findFlightAssignmentsByStaffId(
-    staffId: string,
-  ): Promise<FlightStaff[]> {
-    // Eagerly loading flight for the assignment list might be fine, but we'll stick to base data
-    return this.flightStaffRepository.find({ where: { staffId } });
-  }
+  // async findFlightAssignmentsByStaffId(
+  //   staffId: string,
+  // ): Promise<FlightStaff[]> {
+  //   // Eagerly loading flight for the assignment list might be fine, but we'll stick to base data
+  //   return this.flightStaffRepository.find({ where: { staffId } });
+  // }
 
+  
   async findByAirportIds(airportIds: string[]): Promise<Staff[]> {
     return this.staffRepository.find({
       where: { airportId: In(airportIds) },

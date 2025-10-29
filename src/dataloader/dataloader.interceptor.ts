@@ -1,5 +1,9 @@
-// src/dataloader/dataloader.interceptor.ts
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { DataLoaderService } from './dataloader.service';
@@ -10,7 +14,7 @@ export class DataLoaderInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = GqlExecutionContext.create(context).getContext();
-    
+
     if (!ctx.loaders) {
       ctx.loaders = this.dataLoaderService.createLoaders();
     }

@@ -1,6 +1,8 @@
-// src/dataloader/dataloader.service.ts
 import { Injectable } from '@nestjs/common';
-import { IDataLoaderService, IDataLoaders } from './dataloader.interface';
+import {
+  IDataLoaderService,
+  IDataLoaders,
+} from './interfaces/dataloader.interface';
 import { AirportLoader } from '../airport/airport.loader';
 import { FlightLoader } from '../flight/flight.loader';
 import { StaffLoader } from '../staff/staff.loader';

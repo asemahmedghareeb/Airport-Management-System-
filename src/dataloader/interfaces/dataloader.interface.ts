@@ -1,4 +1,3 @@
-// src/dataloader/dataloader.interface.ts
 import DataLoader from 'dataloader';
 
 export interface IDataLoaders {

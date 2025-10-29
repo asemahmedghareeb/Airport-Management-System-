@@ -22,7 +22,9 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { PaginationInput } from '../common/pagination.input';
 import { PaginatedAirportResponse } from './dto/paginated-airport.response';
-import * as graphqlContextInterface from 'src/common/interfaces/graphql-context.interface';
+import * as graphqlContextInterface from 'src/dataloader/interfaces/graphql-context.interface';
+import { Loader } from 'src/dataloader/decorators/loader.decorator';
+import DataLoader from 'dataloader';
 
 @Resolver(() => Airport)
 export class AirportResolver {
@@ -74,25 +76,28 @@ export class AirportResolver {
   @ResolveField('departingFlights', () => [Flight], { nullable: true })
   async getDepartingFlights(
     @Parent() airport: Airport,
-    @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
+    @Loader('flightsByDepartureAirportId') flightsLoader: DataLoader<string, Flight>, 
+    // @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
   ) {
-    return loaders.flightsByDepartureAirportId.load(airport.id);
+    return flightsLoader.load(airport.id);
   }
 
   @ResolveField('arrivingFlights', () => [Flight], { nullable: true })
   async getArrivingFlights(
     @Parent() airport: Airport,
-    @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
+    @Loader('flightsByArrivalAirportId') flightsLoader: DataLoader<string, Flight>, 
+    // @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
   ) {
-    return loaders.flightsByArrivalAirportId.load(airport.id);
+    return flightsLoader.load(airport.id);
   }
 
   @ResolveField('staff', () => [Staff], { nullable: true })
   async getStaff(
     @Parent() airport: Airport,
-    @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
+    @Loader('staffByAirportId') staffLoader: DataLoader<string, Staff>, 
+    // @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
   ) {
-    return loaders.staffByAirportId.load(airport.id);
+    return staffLoader.load(airport.id);
   }
 
 }
