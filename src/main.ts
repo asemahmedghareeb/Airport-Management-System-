@@ -1,8 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import rateLimit from 'express-rate-limit';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.use(
+    rateLimit({
+      windowMs: 60 * 1000,
+      max: 100, // limit each IP to 100 requests per minute
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: {
+        statusCode: 429,
+        message: 'Too many requests, please try again later.',
+      },
+    }),
+  );
   await app.listen(process.env.PORT!);
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,4 +45,3 @@ bootstrap();
 //for docker logs => docker logs  Airport-management-system-container -f
 
 //dockerfile => docker image => docker container
-  

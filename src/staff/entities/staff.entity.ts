@@ -47,6 +47,7 @@ export class Staff {
   @JoinColumn({ name: 'airportId' }) // 👈 Link to the new column
   airport: Airport;
 
+  
   @Field(() => [FlightStaff], { nullable: 'itemsAndList' })
   @OneToMany(() => FlightStaff, (flightStaff) => flightStaff.staff)
   flightAssignments: FlightStaff[];
