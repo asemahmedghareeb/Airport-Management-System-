@@ -18,6 +18,8 @@ import { User } from 'src/auth/entities/user.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { BookingService } from 'src/booking/booking.service';
+import { Loader } from 'src/dataloader/decorators/loader.decorator';
+import DataLoader from 'dataloader';
 
 @Resolver(() => Passenger)
 export class PassengerResolver {
@@ -67,16 +69,38 @@ export class PassengerResolver {
   ): Promise<Passenger> {
     return this.passengerService.delete(id);
   } // --- FIELD RESOLVERS ---
-  @ResolveField(() => User, { nullable: true }) // 💡 Match the Entity's nullable: true
-  user(@Parent() passenger: Passenger): Promise<User> | null {
-    // If the foreign key is null, return null immediately (no DB query needed)
-    if (!passenger.userId) return null; // Assuming authService.findOne takes a User ID and returns User | null
-    return this.authService.findOne(passenger.userId);
+
+
+
+  @ResolveField(() => User, { nullable: true })
+  user(
+    @Parent() passenger: Passenger,
+    // Use the one-to-one loader for User by ID (from AuthLoader)
+    @Loader('userById') userLoader: DataLoader<string, User>,
+  ): Promise<User> | null {
+    if (!passenger.userId) return null;
+    return userLoader.load(passenger.userId);
   }
 
   @ResolveField(() => [Booking], { nullable: true })
-  bookings(@Parent() passenger: Passenger): Promise<Booking[]> {
-    if (!passenger.id) return Promise.resolve([]); // Assuming bookingService.findBookingsByPassenger is implemented
-    return this.bookingService.findBookingsByPassenger(passenger.id);
+  bookings(
+    @Parent() passenger: Passenger,
+    // Use the one-to-many loader for Bookings by Passenger ID (from BookingLoader)
+    @Loader('bookingsByPassengerId') bookingsLoader: DataLoader<string, Booking[]>,
+  ): Promise<Booking[]> {
+    if (!passenger.id) return Promise.resolve([]);
+    return bookingsLoader.load(passenger.id);
   }
+  // @ResolveField(() => User, { nullable: true }) // 💡 Match the Entity's nullable: true
+  // user(@Parent() passenger: Passenger): Promise<User> | null {
+  //   // If the foreign key is null, return null immediately (no DB query needed)
+  //   if (!passenger.userId) return null; // Assuming authService.findOne takes a User ID and returns User | null
+  //   return this.authService.findOne(passenger.userId);
+  // }
+
+  // @ResolveField(() => [Booking], { nullable: true })
+  // bookings(@Parent() passenger: Passenger): Promise<Booking[]> {
+  //   if (!passenger.id) return Promise.resolve([]); // Assuming bookingService.findBookingsByPassenger is implemented
+  //   return this.bookingService.findBookingsByPassenger(passenger.id);
+  // }
 }

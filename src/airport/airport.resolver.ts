@@ -6,6 +6,7 @@ import {
   ID,
   ResolveField,
   Parent,
+  Context,
 } from '@nestjs/graphql';
 import { AirportService } from './airport.service';
 import { Airport } from './entities/airport.entity';
@@ -21,6 +22,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { PaginationInput } from '../common/pagination.input';
 import { PaginatedAirportResponse } from './dto/paginated-airport.response';
+import * as graphqlContextInterface from 'src/common/interfaces/graphql-context.interface';
 
 @Resolver(() => Airport)
 export class AirportResolver {
@@ -30,7 +32,7 @@ export class AirportResolver {
     private readonly staffService: StaffService,
   ) {}
 
-  // ✅ CREATE Airport (Admin only) 
+  // ✅ CREATE Airport (Admin only)
   @Mutation(() => Airport)
   // @UseGuards(RolesGuard)
   // @Roles(Role.ADMIN)
@@ -46,7 +48,6 @@ export class AirportResolver {
   ): Promise<PaginatedAirportResponse> {
     return this.airportService.findAll(pagination);
   }
-
 
   // ✅ GET single airport by ID
   @Query(() => Airport)
@@ -70,19 +71,48 @@ export class AirportResolver {
     return this.airportService.remove(id);
   }
 
-  // ✅ Related Fields (optional DataLoader optimization later)
-  @ResolveField(() => [Flight], { nullable: true })
-  departingFlights(@Parent() airport: Airport) {
-    return this.flightService.findDepartingFlights(airport.id);
+  @ResolveField('departingFlights', () => [Flight], { nullable: true })
+  async getDepartingFlights(
+    @Parent() airport: Airport,
+    @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
+  ) {
+    return loaders.flightsByDepartureAirportId.load(airport.id);
   }
 
-  @ResolveField(() => [Flight], { nullable: true })
-  arrivingFlights(@Parent() airport: Airport) {
-    return this.flightService.findArrivingFlights(airport.id);
+  @ResolveField('arrivingFlights', () => [Flight], { nullable: true })
+  async getArrivingFlights(
+    @Parent() airport: Airport,
+    @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
+  ) {
+    return loaders.flightsByArrivalAirportId.load(airport.id);
   }
 
-  @ResolveField(() => [Staff], { nullable: true })
-  staff(@Parent() airport: Airport) {
-    return this.staffService.findByAirport(airport.id);
+  @ResolveField('staff', () => [Staff], { nullable: true })
+  async getStaff(
+    @Parent() airport: Airport,
+    @Context() { loaders }: graphqlContextInterface.IGraphQLContext,
+  ) {
+    return loaders.staffByAirportId.load(airport.id);
   }
+
 }
+
+
+
+
+// // ✅ Related Fields (optional DataLoader optimization later)
+// @ResolveField(() => [Flight], { nullable: true })
+// departingFlights(@Parent() airport: Airport) {
+//   return this.flightService.findDepartingFlights(airport.id);
+// }
+
+// @ResolveField(() => [Flight], { nullable: true })
+// arrivingFlights(@Parent() airport: Airport) {
+//   return this.flightService.findArrivingFlights(airport.id);
+// }
+
+// @ResolveField(() => [Staff], { nullable: true })
+// staff(@Parent() airport: Airport) {
+//   return this.staffService.findByAirport(airport.id);
+// }
+

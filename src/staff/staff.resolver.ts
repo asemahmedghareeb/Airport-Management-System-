@@ -19,11 +19,13 @@ import { AssignStaffToFlightInput } from './dto/assignStaffToFlightInput';
 import { User } from 'src/auth/entities/user.entity'; // For ResolveField
 import { Airport } from 'src/airport/entities/airport.entity'; // For ResolveField
 import { NotFoundException } from '@nestjs/common';
+import DataLoader from 'dataloader';
+import { Loader } from 'src/dataloader/decorators/loader.decorator';
 
 @Resolver(() => Staff)
 export class StaffResolver {
   constructor(
-    private readonly staffService: StaffService, 
+    private readonly staffService: StaffService,
     // You should inject UserService and AirportService here instead of relying solely on StaffService helpers
     // private readonly userService: UserService,
     // private readonly airportService: AirportService,
@@ -95,23 +97,52 @@ export class StaffResolver {
   }
 
   // --- FIELD RESOLVERS ---
-
   @ResolveField(() => User)
-  user(@Parent() staff: Staff): Promise<User | null> {
-    // Uses the explicit foreign key to fetch the User
-    return this.staffService.findUserByStaffId(staff.userId);
+  user(
+    @Parent() staff: Staff,
+    // One-to-one: from AuthLoader
+    @Loader('userById') userLoader: DataLoader<string, User>,
+  ): Promise<User> | null {
+    if (!staff.userId) return null;
+    return userLoader.load(staff.userId);
   }
 
   @ResolveField(() => Airport)
-  airport(@Parent() staff: Staff): Promise<Airport | null> {
-    // Uses the explicit foreign key to fetch the Airport
-
-    return this.staffService.findAirportByStaffId(staff.airportId);
+  airport(
+    @Parent() staff: Staff,
+    // One-to-one/Many-to-One: from AirportLoader
+    @Loader('airportById') airportLoader: DataLoader<string, Airport>,
+  ): Promise<Airport> | null {
+    if (!staff.airportId) return null;
+    return airportLoader.load(staff.airportId);
   }
 
   @ResolveField(() => [FlightStaff], { nullable: true })
-  flightAssignments(@Parent() staff: Staff): Promise<FlightStaff[]> {
-    // Uses the primary key to fetch assignments
-    return this.staffService.findFlightAssignmentsByStaffId(staff.id);
+  flightAssignments(
+    @Parent() staff: Staff,
+    // One-to-many: New loader created below
+    @Loader('flightAssignmentsByStaffId')
+    flightAssignmentsLoader: DataLoader<string, FlightStaff[]>,
+  ): Promise<FlightStaff[]> {
+    return flightAssignmentsLoader.load(staff.id);
   }
+
+  // @ResolveField(() => User)
+  // user(@Parent() staff: Staff): Promise<User | null> {
+  //   // Uses the explicit foreign key to fetch the User
+  //   return this.staffService.findUserByStaffId(staff.userId);
+  // }
+
+  // @ResolveField(() => Airport)
+  // airport(@Parent() staff: Staff): Promise<Airport | null> {
+  //   // Uses the explicit foreign key to fetch the Airport
+
+  //   return this.staffService.findAirportByStaffId(staff.airportId);
+  // }
+
+  // @ResolveField(() => [FlightStaff], { nullable: true })
+  // flightAssignments(@Parent() staff: Staff): Promise<FlightStaff[]> {
+  //   // Uses the primary key to fetch assignments
+  //   return this.staffService.findFlightAssignmentsByStaffId(staff.id);
+  // }
 }

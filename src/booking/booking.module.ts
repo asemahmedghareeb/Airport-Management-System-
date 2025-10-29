@@ -7,6 +7,7 @@ import { Flight } from 'src/flight/entities/flight.entity';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
 import { FlightModule } from 'src/flight/flight.module';
 import { PassengerModule } from 'src/passenger/passenger.module';
+import { BookingLoader } from './booking.loader';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { PassengerModule } from 'src/passenger/passenger.module';
     forwardRef(() => FlightModule),
     forwardRef(() => PassengerModule),
   ],
-  providers: [BookingService, BookingResolver],
-  exports: [BookingService], // ✅ must export
+  providers: [BookingService, BookingResolver, BookingLoader],
+  exports: [BookingService, BookingLoader], // ✅ must export
 })
 export class BookingModule {}

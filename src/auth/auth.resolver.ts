@@ -14,6 +14,7 @@ import { RegisterPassengerInput } from './dto/passenger.dto';
 import { LoginInput } from './dto/loginInput.dto';
 import { AuthResponse } from './dto/authResponse.dto';
 import { RegisterStaffInput } from './dto/staff.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Resolver(() => User)
 export class AuthResolver {

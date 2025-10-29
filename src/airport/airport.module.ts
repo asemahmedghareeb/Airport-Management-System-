@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FlightModule } from 'src/flight/flight.module';
 import { StaffModule } from 'src/staff/staff.module';
 import { Airport } from './entities/airport.entity';
+import { AirportLoader } from './airport.loader';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { Airport } from './entities/airport.entity';
     forwardRef(() => FlightModule),
     forwardRef(() => StaffModule),
   ],
-  providers: [AirportResolver, AirportService],
-  exports: [AirportService],
+  providers: [AirportResolver, AirportService, AirportLoader],
+  exports: [AirportService, AirportLoader],
 })
 export class AirportModule {}

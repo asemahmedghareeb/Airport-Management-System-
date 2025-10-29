@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Airport } from './entities/airport.entity';
 import { CreateAirportInput } from './dto/create-airport.input';
 import { UpdateAirportInput } from './dto/update-airport.input';
@@ -74,5 +74,11 @@ export class AirportService {
     if (!result.affected)
       throw new NotFoundException(`Airport ${id} not found`);
     return true;
+  }
+
+  // src/airport/airport.service.ts
+  // Add this method to the AirportService class
+  async findByIds(ids: string[]): Promise<Airport[]> {
+    return this.airportRepository.find({ where: { id: In(ids) } });
   }
 }

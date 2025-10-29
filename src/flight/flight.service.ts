@@ -1,6 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Flight } from './entities/flight.entity';
 import { CreateFlightInput } from './dto/create-flight.input';
 import { UpdateFlightInput } from './dto/update-flight.input';
@@ -15,18 +19,19 @@ export class FlightService {
     private readonly flightRepo: Repository<Flight>,
     @InjectRepository(Airport)
     private readonly airportRepo: Repository<Airport>,
-    
   ) {}
 
   async create(input: CreateFlightInput): Promise<Flight> {
     const departureAirport = await this.airportRepo.findOneBy({
       id: input.departureAirportId,
     });
-    if (!departureAirport) throw new NotFoundException('Departure airport not found');
+    if (!departureAirport)
+      throw new NotFoundException('Departure airport not found');
     const destinationAirport = await this.airportRepo.findOneBy({
       id: input.destinationAirportId,
     });
-    if (!destinationAirport) throw new NotFoundException('Destination airport not found');
+    if (!destinationAirport)
+      throw new NotFoundException('Destination airport not found');
 
     const flight = this.flightRepo.create({
       ...input,
@@ -57,7 +62,8 @@ export class FlightService {
       const departureAirport = await this.airportRepo.findOneBy({
         id: input.departureAirportId,
       });
-      if (!departureAirport) throw new NotFoundException('Departure airport not found');
+      if (!departureAirport)
+        throw new NotFoundException('Departure airport not found');
       flight.departureAirport = departureAirport;
     }
 
@@ -65,7 +71,8 @@ export class FlightService {
       const destinationAirport = await this.airportRepo.findOneBy({
         id: input.destinationAirportId,
       });
-      if (!destinationAirport) throw new NotFoundException('Destination airport not found');
+      if (!destinationAirport)
+        throw new NotFoundException('Destination airport not found');
       flight.destinationAirport = destinationAirport;
     }
 
@@ -137,7 +144,6 @@ export class FlightService {
   async findOne(id: string): Promise<Flight> {
     const flight = await this.flightRepo.findOne({
       where: { id },
-
     });
     if (!flight) throw new NotFoundException('Flight not found');
     return flight;
@@ -153,6 +159,31 @@ export class FlightService {
   findArrivingFlights(airportId: string) {
     return this.flightRepo.find({
       where: { destinationAirport: { id: airportId } },
+    });
+  }
+
+  async findByDepartureAirportIds(airportIds: string[]): Promise<Flight[]> {
+    return this.flightRepo.find({
+      where: {
+        departureAirportId: In(airportIds),
+      },
+    });
+  }
+
+  async findByArrivalAirportIds(airportIds: string[]): Promise<Flight[]> {
+    return this.flightRepo.find({
+      where: {
+        destinationAirportId: In(airportIds),
+      },
+    });
+  }
+
+
+  async findByIds(ids: string[]): Promise<Flight[]> {
+    return this.flightRepo.find({
+      where: {
+        id: In(ids),
+      },
     });
   }
 }

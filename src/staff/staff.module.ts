@@ -9,14 +9,15 @@ import { AirportModule } from 'src/airport/airport.module';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { User } from 'src/auth/entities/user.entity';
+import { StaffLoader } from './staff.loader';
 
 @Module({
   imports: [
     forwardRef(() => FlightModule),
     forwardRef(() => AirportModule),
-    TypeOrmModule.forFeature([Staff, FlightStaff, Flight, Airport,User]),
+    TypeOrmModule.forFeature([Staff, FlightStaff, Flight, Airport, User]),
   ],
-  exports: [StaffService],
-  providers: [StaffResolver, StaffService],
+  exports: [StaffService, StaffLoader],
+  providers: [StaffResolver, StaffService, StaffLoader],
 })
 export class StaffModule {}

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Booking } from './entities/booking.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { BookFlightInput, UpdateBookingInput } from './dto/BookFlightInput.dto';
@@ -143,7 +143,7 @@ export class BookingService {
 
     const [items, totalItems] = await this.bookingRepository.findAndCount({
       skip,
-      take: limit, 
+      take: limit,
     });
 
     return {
@@ -193,7 +193,7 @@ export class BookingService {
   // --- Query: Allow passengers to check flight details (Requirement 2) ---
   async findBookingsByPassenger(passengerId: string): Promise<Booking[]> {
     const bookings = await this.bookingRepository.find({
-      where: { passenger: { id: passengerId } }, 
+      where: { passenger: { id: passengerId } },
       order: { bookingDate: 'DESC' },
     });
     return bookings;
@@ -201,5 +201,17 @@ export class BookingService {
 
   async findByFlight(id: string): Promise<Booking[]> {
     return this.bookingRepository.find({ where: { flight: { id } } });
+  }
+
+  findByFlightIds(flightIds: string[]): Promise<Booking[]> {
+    return this.bookingRepository.find({
+      where: { flight: { id: In(flightIds) } },
+    });
+  }
+
+  findByPassengerIds(passengerIds: string[]): Promise<Booking[]> {
+    return this.bookingRepository.find({
+      where: { passenger: { id: In(passengerIds) } },
+    });
   }
 }

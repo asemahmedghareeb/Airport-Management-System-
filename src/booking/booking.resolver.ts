@@ -16,6 +16,8 @@ import { Flight } from 'src/flight/entities/flight.entity';
 import { FlightService } from 'src/flight/flight.service';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
 import { PassengerService } from 'src/passenger/passenger.service';
+import { Loader } from 'src/dataloader/decorators/loader.decorator';
+import DataLoader from 'dataloader';
 
 @Resolver(() => Booking)
 export class BookingResolver {
@@ -89,17 +91,39 @@ export class BookingResolver {
   } // --- FIELD RESOLVERS (N+1 Issue is here) ---
   // The resolver is updated to use the foreign key IDs.
 
+
+  
   @ResolveField(() => Flight)
-  flight(@Parent() booking: Booking): Promise<Flight> {
-    // 💥 FIX: Use the explicit foreign key ID
-    // if (!booking.flightId) return null; // Defensive check
-    return this.flightService.findOne(booking.flightId);
+  async flight(
+    @Parent() booking: Booking,
+    @Loader('flightById') flightLoader: DataLoader<string, Flight>, // Inject the specific loader
+  ): Promise<Flight> {
+  
+    return flightLoader.load(booking.flightId);
   }
 
   @ResolveField(() => Passenger)
-  passenger(@Parent() booking: Booking): Promise<Passenger> {
-    // 💥 FIX: Use the explicit foreign key ID
-    // if (!booking.passengerId) return null; // Defensive check
-    return this.passengerService.findOne(booking.passengerId);
+  async passenger(
+    @Parent() booking: Booking,
+    @Loader('passengerById') passengerLoader: DataLoader<string, Passenger>, // Inject the specific loader
+  ): Promise<Passenger> {
+   
+    return passengerLoader.load(booking.passengerId);
   }
+
+
+
+  // @ResolveField(() => Flight)
+  // flight(@Parent() booking: Booking): Promise<Flight> {
+  //   // 💥 FIX: Use the explicit foreign key ID
+  //   // if (!booking.flightId) return null; // Defensive check
+  //   return this.flightService.findOne(booking.flightId);
+  // }
+
+  // @ResolveField(() => Passenger)
+  // passenger(@Parent() booking: Booking): Promise<Passenger> {
+  //   // 💥 FIX: Use the explicit foreign key ID
+  //   // if (!booking.passengerId) return null; // Defensive check
+  //   return this.passengerService.findOne(booking.passengerId);
+  // }
 }

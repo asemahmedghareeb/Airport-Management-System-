@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm'; // Import 'In' for potential DataLoader implementation
+import { Repository, In } from 'typeorm'; 
 import { Staff } from './entities/staff.entity';
 import { FlightStaff } from 'src/flight/entities/flight_staff';
 import { Airport } from 'src/airport/entities/airport.entity';
@@ -11,7 +11,7 @@ import { PaginatedStaff } from './dto/paginatedStaff.dto';
 import { UpdateStaffInput } from './dto/UpdateStaffInput.dto';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { AssignStaffToFlightInput } from './dto/assignStaffToFlightInput';
-import { User } from 'src/auth/entities/user.entity'; // Assuming User entity is used for deletion
+import { User } from 'src/auth/entities/user.entity'; 
 
 @Injectable()
 export class StaffService {
@@ -24,9 +24,9 @@ export class StaffService {
     private flightRepository: Repository<Flight>,
     @InjectRepository(FlightStaff)
     private flightStaffRepository: Repository<FlightStaff>,
-    @InjectRepository(User) // Needed for deletion logic (if not handled by cascade)
+    @InjectRepository(User) 
     private userRepository: Repository<User>,
-  ) {} // --- READ: Retrieve Staff with Pagination and Filtering ---
+  ) {} 
 
   async findAll(
     pagination: PaginationInput,
@@ -187,5 +187,26 @@ export class StaffService {
   ): Promise<FlightStaff[]> {
     // Eagerly loading flight for the assignment list might be fine, but we'll stick to base data
     return this.flightStaffRepository.find({ where: { staffId } });
+  }
+
+  async findByAirportIds(airportIds: string[]): Promise<Staff[]> {
+    return this.staffRepository.find({
+      where: { airportId: In(airportIds) },
+    });
+  }
+
+  async findByFlightIds(flightIds: string[]): Promise<Staff[]> {
+   
+    return this.staffRepository.find({
+      where: {
+        id: In(flightIds),
+      },
+    });
+  }
+
+  flightAssignmentsByStaffIds(staffIds: string[]): Promise<FlightStaff[]> {
+    return this.flightStaffRepository.find({
+      where: { staffId: In(staffIds) },
+    });
   }
 }

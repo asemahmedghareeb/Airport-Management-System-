@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Passenger } from './entities/passenger.entity';
 import { PaginationInput } from 'src/common/pagination.input';
@@ -110,5 +110,9 @@ export class PassengerService {
     return this.userRepository.findOne({
       where: { passenger: { id: passengerId } },
     });
+  }
+
+  async findByIds(ids: string[]): Promise<Passenger[]> {
+    return await this.passengerRepository.find({ where: { id: In(ids) } });
   }
 }

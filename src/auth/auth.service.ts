@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Passenger } from '../passenger/entities/passenger.entity';
@@ -88,9 +88,8 @@ export class AuthService {
       );
     }
 
+    const hashedPassword = await bcrypt.hash(input.password, 10);
 
-    const hashedPassword = await bcrypt.hash(input.password, 10); 
-    
     // 5. Create the base User entity
     // ... (Steps 1-5 remain)
     const newUser = this.usersRepository.create({
@@ -112,15 +111,13 @@ export class AuthService {
 
     // 7. CRITICAL FIX: Update the User entity with the new Staff ID and save it.
     savedUser.staff = savedStaff; // Assuming the field is named 'staff' on the User entity
-    await this.usersRepository.save(savedUser); 
+    await this.usersRepository.save(savedUser);
 
     const payload = { userId: savedUser.id, role: savedUser.role };
     const accessToken = this.jwtService.sign(payload);
 
     return { accessToken };
   }
-
-
 
   // --- General Login ---
   async login({ email, password }: LoginInput): Promise<AuthResponse> {
@@ -161,5 +158,12 @@ export class AuthService {
       throw new NotFoundException(`User with ID "${id}" not found.`);
     }
     return user;
+  }
+
+  // New method for DataLoader batching
+  async findByIds(userIds: string[]): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { id: In(userIds) },
+    });
   }
 }
