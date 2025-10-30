@@ -38,4 +38,14 @@ export class AuthResolver {
   async login(@Args('input') input: LoginInput): Promise<AuthResponse> {
     return this.authService.login(input);
   }
+
+  @Query(() => User, { name: 'me' })
+  async me(@CurrentUser() user: User): Promise<User> {
+    return user;
+  }
+
+  @Query(() => User, { name: 'user' })
+  async findUser(@Args('id') id: string): Promise<User> {
+    return this.authService.findOne(id);
+  }
 }

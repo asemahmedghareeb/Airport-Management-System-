@@ -7,6 +7,9 @@ import { UpdateFlightInput } from './dto/update-flight.input';
 import { FlightFilterInput } from './dto/flight-filter.input';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { PaginationInput } from 'src/common/pagination.input';
+import { OneSignalService } from 'src/push-notifications/onesignal.service';
+import { Booking } from 'src/booking/entities/booking.entity';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class FlightService {
@@ -15,6 +18,11 @@ export class FlightService {
     private readonly flightRepo: Repository<Flight>,
     @InjectRepository(Airport)
     private readonly airportRepo: Repository<Airport>,
+    private readonly oneSignalService: OneSignalService,
+    @InjectRepository(Booking)
+    private readonly bookingRepo: Repository<Booking>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
   async create(input: CreateFlightInput): Promise<Flight> {
@@ -44,7 +52,10 @@ export class FlightService {
       relations: ['departureAirport', 'destinationAirport'],
     });
     if (!flight) throw new NotFoundException('Flight not found');
-
+    let isStatusChanged = false;
+    if (input.status !== flight.status) {
+      isStatusChanged = true;
+    }
     Object.assign(flight, {
       flightNumber: input.flightNumber ?? flight.flightNumber,
       airline: input.airline ?? flight.airline,
@@ -72,7 +83,44 @@ export class FlightService {
       flight.destinationAirport = destinationAirport;
     }
 
-    return this.flightRepo.save(flight);
+    const updatedFlight = await this.flightRepo.save(flight);
+    // ✅ Send notification if status changed
+    if (isStatusChanged) {
+      console.log(
+        '🚀 ~ FlightService ~ update ~ flight.status:',
+        flight.status,
+      );
+      const Bookings = await this.bookingRepo.find({
+        where: { flightId: id },
+        relations: ['passenger'],
+      });
+      const userIds = Bookings.map((booking) => booking.passenger.userId);
+
+      const users = await this.userRepo.find({
+        where: { id: In(userIds) },
+        relations: ['pushDevices'],
+      });
+
+      const PlayerIds = users
+        .map((user) =>
+          user.pushDevices.map((pushDevice) => pushDevice.playerId),
+        )
+        .flat();
+
+      console.log(PlayerIds);
+
+      try {
+        await this.oneSignalService.sendNotification(
+          { en: `Flight ${flight.flightNumber} Status Updated` },
+          { en: `The flight status is now: ${flight.status}` },
+          PlayerIds || [],
+        );
+      } catch (err) {
+        console.error('Notification failed:', err);
+      }
+    }
+
+    return updatedFlight;
   }
 
   async remove(id: string): Promise<boolean> {
@@ -144,19 +192,6 @@ export class FlightService {
     if (!flight) throw new NotFoundException('Flight not found');
     return flight;
   }
-
-  // Helpers for AirportResolver
-  // findDepartingFlights(airportId: string) {
-  //   return this.flightRepo.find({
-  //     where: { departureAirport: { id: airportId } },
-  //   });
-  // }
-
-  // findArrivingFlights(airportId: string) {
-  //   return this.flightRepo.find({
-  //     where: { destinationAirport: { id: airportId } },
-  //   });
-  // }
 
   async findByDepartureAirportIds(airportIds: string[]): Promise<Flight[]> {
     return this.flightRepo.find({

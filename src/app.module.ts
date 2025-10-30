@@ -28,6 +28,9 @@ import { DataLoaderInterceptor } from './dataloader/dataloader.interceptor';
 
 import { ThrottlerModule } from '@nestjs/throttler';
 import { GqlThrottlerGuard } from './common/throttler.Guard';
+import { NotificationModule } from './FCM___NOT_WORKING/notification.module';
+import { PushNotificationsModule } from './push-notifications/push-notifications.module';
+import { PushDevice } from './push-notifications/entities/PushDevice.entity';
 
 @Module({
   imports: [
@@ -57,7 +60,7 @@ import { GqlThrottlerGuard } from './common/throttler.Guard';
       synchronize: true,
       autoLoadEntities: true,
       // logging: true,
-      entities: [User, Airport, Flight, Staff, Passenger, Booking, FlightStaff],
+      entities: [User, Airport, Flight, Staff, Passenger, Booking, FlightStaff,PushDevice ],
     }),
 
     // ✅ GraphQL setup
@@ -78,6 +81,8 @@ import { GqlThrottlerGuard } from './common/throttler.Guard';
       inject: [ConfigService],
     }),
 
+    NotificationModule,
+
     // ✅ Application modules
     AuthModule,
     AirportModule,
@@ -85,6 +90,7 @@ import { GqlThrottlerGuard } from './common/throttler.Guard';
     StaffModule,
     PassengerModule,
     BookingModule,
+    PushNotificationsModule,
   ],
 
   providers: [

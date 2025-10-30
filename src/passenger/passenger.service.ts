@@ -94,7 +94,7 @@ export class PassengerService {
     const passenger = await this.findOne(id);
 
     const user = await this.userRepository.findOne({
-      where: { passenger: { id } },
+      where: { id: passenger.userId },
     });
 
     if (user) {

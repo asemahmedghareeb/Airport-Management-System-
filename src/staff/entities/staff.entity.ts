@@ -38,7 +38,8 @@ export class Staff {
   airportId: string; // ====================================
   // === Relationships ===
   @Field(() => User)
-  @OneToOne(() => User, (user) => user.staff, { onDelete: 'CASCADE' })
+  // @OneToOne(() => User, (user) => user.staff, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' }) // 👈 Link to the new column
   user: User;
 

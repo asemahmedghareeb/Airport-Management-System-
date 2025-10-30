@@ -100,7 +100,7 @@ export class StaffService {
     }
 
     const user = await this.userRepository.findOneBy({
-      staff: { id: staff.id },
+      id: staff.userId,
     });
     if (user) {
       await this.userRepository.remove(user);
@@ -166,8 +166,6 @@ export class StaffService {
     });
     return flightStaff.map((fs) => fs.staff);
   }
-
-
 
   async findByAirportIds(airportIds: string[]): Promise<Staff[]> {
     return this.staffRepository.find({

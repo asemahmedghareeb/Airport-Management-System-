@@ -33,7 +33,8 @@ export class Passenger {
   userId: string; // === Relationships ===
 
   @Field(() => User) // ✅ FIX: Must be nullable in GraphQL to allow null returns
-  @OneToOne(() => User, (user) => user.passenger, { onDelete: 'CASCADE' })
+  // @OneToOne(() => User, (user) => user.passenger, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 

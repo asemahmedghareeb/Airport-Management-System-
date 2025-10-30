@@ -111,6 +111,10 @@ export class FlightResolver {
     return staffLoader.load(flight.id);
   }
 
+
+}
+
+
   // @ResolveField(() => Airport)
   // departureAirport(@Parent() flight: Flight): Promise<Airport> | null {
   //   // 💡 FIX: Use the explicit foreign key property
@@ -134,4 +138,3 @@ export class FlightResolver {
   // staffAssignments(@Parent() flight: Flight): Promise<Staff[]> {
   //   return this.staffService.findByFlight(flight.id);
   // }
-}

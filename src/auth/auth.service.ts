@@ -110,7 +110,7 @@ export class AuthService {
     const savedStaff = await this.staffRepository.save(newStaff);
 
     // 7. CRITICAL FIX: Update the User entity with the new Staff ID and save it.
-    savedUser.staff = savedStaff; // Assuming the field is named 'staff' on the User entity
+    savedUser.id = savedStaff.id; // Assuming the field is named 'staff' on the User entity
     await this.usersRepository.save(savedUser);
 
     const payload = { userId: savedUser.id, role: savedUser.role };
@@ -153,6 +153,7 @@ export class AuthService {
   async findOne(id: string): Promise<User> {
     const user: User | null = await this.usersRepository.findOne({
       where: { id },
+      relations: ['staff', 'passenger', 'pushDevices'],
     });
     if (!user) {
       throw new NotFoundException(`User with ID "${id}" not found.`);
