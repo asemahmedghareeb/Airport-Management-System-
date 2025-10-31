@@ -13,9 +13,7 @@ import { PaginationInput } from 'src/common/pagination.input';
 import { BookFlightInput, UpdateBookingInput } from './dto/BookFlightInput.dto';
 import { PaginatedBooking } from './dto/paginatedBooking.dto';
 import { Flight } from 'src/flight/entities/flight.entity';
-
 import { Passenger } from 'src/passenger/entities/passenger.entity';
-
 import { Loader } from 'src/dataloader/decorators/loader.decorator';
 import DataLoader from 'dataloader';
 import { UseGuards } from '@nestjs/common';
@@ -23,7 +21,14 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+// import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
+
+interface IPassenger {
+  userId: string;
+  role: string;
+  passengerId: string;
+}
 
 @UseGuards(AuthGuard)
 @Resolver(() => Booking)
@@ -42,7 +47,7 @@ export class BookingResolver {
   }
 
   @Roles(Role.ADMIN, Role.PASSENGER)
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard, IsOwnerGuard)
   @Mutation(() => Booking, {
     name: 'updateBooking',
     description:
@@ -50,35 +55,26 @@ export class BookingResolver {
   })
   updateBooking(
     @Args('input') input: UpdateBookingInput,
-    @CurrentUser() user: { userId: string; role: string; passengerId: string },
   ): Promise<Booking> {
-    if (user.role === Role.PASSENGER) {
-      input.id = user.passengerId;
-    }
+  
     return this.bookingService.updateBooking(input);
   }
 
   @Roles(Role.ADMIN, Role.PASSENGER)
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard, IsOwnerGuard)
   @Mutation(() => Booking, {
     name: 'deleteBooking',
     description: 'Cancel a booking (Admin/Passenger self-delete)',
   })
   deleteBooking(
-    @CurrentUser() user: { userId: string; role: string; passengerId: string },
-    @Args('id', { type: () => ID, nullable: true }) id?: string,
+    @Args('id', { type: () => ID }) id: string,
   ): Promise<Booking> {
-    if (user.role === Role.PASSENGER) {
-      id = user.passengerId;
-    }
-    if (!id) {
-      throw new Error('Booking ID is required');
-    }
+
     return this.bookingService.deleteBooking(id);
   }
 
-  @Roles(Role.ADMIN)
-  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.PASSENGER)
+  @UseGuards(RolesGuard, IsOwnerGuard)
   @Query(() => Booking, {
     name: 'booking',
     description:
@@ -102,27 +98,20 @@ export class BookingResolver {
   }
 
   @Roles(Role.PASSENGER, Role.ADMIN)
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard, IsOwnerGuard)
   @Query(() => [Booking], {
     name: 'myBookings',
     description:
       'Retrieve all bookings and flight details for a passenger (Passenger self-lookup)',
   })
   findBookingsByPassenger(
-    @CurrentUser() user: { userId: string; role: string; passengerId: string },
     @Args('passengerId', {
       type: () => ID,
       description: 'The ID of the passenger.',
-      nullable: true,
     })
-    passengerId?: string,
+    passengerId: string,
   ): Promise<Booking[]> {
-    if (user.role === Role.PASSENGER) {
-      return this.bookingService.findBookingsByPassenger(user.passengerId);
-    }
-    if (!passengerId) {
-      throw new Error('Passenger ID is required');
-    }
+
     return this.bookingService.findBookingsByPassenger(passengerId);
   }
 
@@ -143,18 +132,4 @@ export class BookingResolver {
   ): Promise<Passenger> {
     return passengerLoader.load(booking.passengerId);
   }
-
-  // @ResolveField(() => Flight)
-  // flight(@Parent() booking: Booking): Promise<Flight> {
-  //   // 💥 FIX: Use the explicit foreign key ID
-  //   // if (!booking.flightId) return null; // Defensive check
-  //   return this.flightService.findOne(booking.flightId);
-  // }
-
-  // @ResolveField(() => Passenger)
-  // passenger(@Parent() booking: Booking): Promise<Passenger> {
-  //   // 💥 FIX: Use the explicit foreign key ID
-  //   // if (!booking.passengerId) return null; // Defensive check
-  //   return this.passengerService.findOne(booking.passengerId);
-  // }
 }

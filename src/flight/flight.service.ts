@@ -7,9 +7,11 @@ import { UpdateFlightInput } from './dto/update-flight.input';
 import { FlightFilterInput } from './dto/flight-filter.input';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { PaginationInput } from 'src/common/pagination.input';
-import { OneSignalService } from 'src/push-notifications/onesignal.service';
 import { Booking } from 'src/booking/entities/booking.entity';
 import { User } from 'src/auth/entities/user.entity';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bullmq';
+import { EmailsService } from 'src/emails/emails.service';
 
 @Injectable()
 export class FlightService {
@@ -22,7 +24,9 @@ export class FlightService {
     private readonly bookingRepo: Repository<Booking>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly oneSignalService: OneSignalService,
+    @InjectQueue('notification') private readonly notificationQueue: Queue,
+    @InjectQueue('email') private readonly emailQueue: Queue,   
+    private readonly emailsService: EmailsService,
   ) {}
 
   async create(input: CreateFlightInput): Promise<Flight> {
@@ -84,12 +88,8 @@ export class FlightService {
     }
 
     const updatedFlight = await this.flightRepo.save(flight);
-    // ✅ Send notification if status changed
     if (isStatusChanged) {
-      console.log(
-        '🚀 ~ FlightService ~ update ~ flight.status:',
-        flight.status,
-      );
+      console.log('Flight status changed:');
       const Bookings = await this.bookingRepo.find({
         where: { flightId: input.id },
         relations: ['passenger'],
@@ -107,17 +107,38 @@ export class FlightService {
         )
         .flat();
 
-      // console.log(PlayerIds);
-
-      try {
-        await this.oneSignalService.sendNotification(
-          { en: `Flight ${flight.flightNumber} Status Updated` },
-          { en: `The flight status is now: ${flight.status}` },
-          PlayerIds || [],
-        );
-      } catch (err) {
-        console.error('Notification failed:', err);
+      const usersEmails=users.map((user)=>user.email)
+      console.log(usersEmails)
+      for (const user of users) {
+        if (user.email) {
+          await this.emailQueue.add(
+            'send-status-email', // Job name
+            {
+              toEmail: user.email,
+              flightNumber: updatedFlight.flightNumber,
+              newStatus: updatedFlight.status,
+            },
+            {
+              // Optional: Unique job ID for tracking/idempotency
+              jobId: `flight-${updatedFlight.id}-email-${user.id}-${Date.now()}`
+            }
+          );
+        }
       }
+
+      await this.notificationQueue.add(
+        'flight-status-update',
+        {
+          flightNumber: updatedFlight.flightNumber,
+          newStatus: updatedFlight.status,
+          playerIds: PlayerIds,
+        },
+        {
+          jobId: `flight-${updatedFlight.id}-status-update-${Date.now()}`,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+        },
+      );
     }
 
     return updatedFlight;
@@ -145,7 +166,6 @@ export class FlightService {
       .leftJoinAndSelect('flight.departureAirport', 'departureAirport')
       .leftJoinAndSelect('flight.destinationAirport', 'destinationAirport');
 
-    // Apply filters
     if (filter?.airline) {
       query.andWhere('flight.airline ILIKE :airline', {
         airline: `%${filter.airline}%`,
@@ -171,7 +191,6 @@ export class FlightService {
       });
     }
 
-    // Pagination
     const totalCount = await query.getCount();
     const totalPages = Math.ceil(totalCount / limit);
     const hasNextPage = page < totalPages;

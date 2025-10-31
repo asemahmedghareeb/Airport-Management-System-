@@ -164,7 +164,7 @@ type Query {
   """
   myBookings(
     """The ID of the passenger."""
-    passengerId: ID
+    passengerId: ID!
   ): [Booking!]!
 
   """Retrieve all passengers with pagination and filters (Admin/Staff only)"""
@@ -227,12 +227,14 @@ type Mutation {
   updateBooking(input: UpdateBookingInput!): Booking!
 
   """Cancel a booking (Admin/Passenger self-delete)"""
-  deleteBooking(id: ID): Booking!
+  deleteBooking(id: ID!): Booking!
 
   """Update a passenger record (Admin/Passenger self-update)"""
   updatePassenger(input: UpdatePassengerInput!): Passenger!
 
-  """Delete a passenger and their associated user account (Admin only)"""
+  """
+  Delete a passenger and their associated user account (Admin/Passenger self-delete)
+  """
   deletePassenger(id: ID!): Passenger!
   registerPushDevice(input: RegisterPushDeviceInput!): PushDevice!
   sendNotification(input: SendNotificationInput!): NotificationResponse!

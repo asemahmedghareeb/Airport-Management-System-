@@ -10,8 +10,8 @@ import { AirportLoader } from './airport.loader';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Airport]),
-    forwardRef(() => FlightModule),
-    forwardRef(() => StaffModule),
+    // forwardRef(() => FlightModule),
+    // forwardRef(() => StaffModule),
   ],
   providers: [AirportResolver, AirportService, AirportLoader],
   exports: [AirportService, AirportLoader],

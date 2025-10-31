@@ -11,12 +11,10 @@ import { PassengerService } from './passenger.service';
 import { Passenger } from './entities/passenger.entity';
 import { PaginatedPassenger } from './dto/paginatedPassenger.dto';
 import { PaginationInput } from 'src/common/pagination.input';
-
 import { UpdatePassengerInput } from './dto/passengerUpdateInput.dto';
 import { PassengerFilterInput } from './dto/passengerFilterInput.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
-
 import { Loader } from 'src/dataloader/decorators/loader.decorator';
 import DataLoader from 'dataloader';
 import { UseGuards } from '@nestjs/common';
@@ -28,7 +26,7 @@ import { Role } from 'src/auth/role.enum';
 @UseGuards(AuthGuard)
 @Resolver(() => Passenger)
 export class PassengerResolver {
-  constructor(private readonly passengerService: PassengerService) {} // --- QUERIES and MUTATIONS (Methods remain unchanged) ---
+  constructor(private readonly passengerService: PassengerService) {}
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
@@ -71,19 +69,17 @@ export class PassengerResolver {
   @Roles(Role.ADMIN)
   @Mutation(() => Passenger, {
     description:
-      'Delete a passenger and their associated user account (Admin only)',
+      'Delete a passenger and their associated user account (Admin/Passenger self-delete)',
   })
   deletePassenger(
     @Args('id', { type: () => ID }) id: string,
   ): Promise<Passenger> {
     return this.passengerService.delete(id);
-  } 
+  }
 
-  
   @ResolveField(() => User, { nullable: true })
   user(
     @Parent() passenger: Passenger,
-    // Use the one-to-one loader for User by ID (from AuthLoader)
     @Loader('userById') userLoader: DataLoader<string, User>,
   ): Promise<User> | null {
     if (!passenger.userId) return null;
@@ -93,23 +89,12 @@ export class PassengerResolver {
   @ResolveField(() => [Booking], { nullable: true })
   bookings(
     @Parent() passenger: Passenger,
-    // Use the one-to-many loader for Bookings by Passenger ID (from BookingLoader)
+   
     @Loader('bookingsByPassengerId')
     bookingsLoader: DataLoader<string, Booking[]>,
   ): Promise<Booking[]> {
     if (!passenger.id) return Promise.resolve([]);
     return bookingsLoader.load(passenger.id);
   }
-  // @ResolveField(() => User, { nullable: true }) // 💡 Match the Entity's nullable: true
-  // user(@Parent() passenger: Passenger): Promise<User> | null {
-  //   // If the foreign key is null, return null immediately (no DB query needed)
-  //   if (!passenger.userId) return null; // Assuming authService.findOne takes a User ID and returns User | null
-  //   return this.authService.findOne(passenger.userId);
-  // }
-
-  // @ResolveField(() => [Booking], { nullable: true })
-  // bookings(@Parent() passenger: Passenger): Promise<Booking[]> {
-  //   if (!passenger.id) return Promise.resolve([]); // Assuming bookingService.findBookingsByPassenger is implemented
-  //   return this.bookingService.findBookingsByPassenger(passenger.id);
-  // }
+ 
 }

@@ -14,8 +14,6 @@ import { CreateAirportInput } from './dto/create-airport.input';
 import { UpdateAirportInput } from './dto/update-airport.input';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { Staff } from 'src/staff/entities/staff.entity';
-import { FlightService } from 'src/flight/flight.service';
-import { StaffService } from 'src/staff/staff.service';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -31,8 +29,6 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 export class AirportResolver {
   constructor(
     private readonly airportService: AirportService,
-    private readonly flightService: FlightService,
-    private readonly staffService: StaffService,
   ) {}
 
   @Roles(Role.ADMIN)
@@ -102,19 +98,3 @@ export class AirportResolver {
     return staffLoader.load(airport.id);
   }
 }
-
-// // ✅ Related Fields (optional DataLoader optimization later)
-// @ResolveField(() => [Flight], { nullable: true })
-// departingFlights(@Parent() airport: Airport) {
-//   return this.flightService.findDepartingFlights(airport.id);
-// }
-
-// @ResolveField(() => [Flight], { nullable: true })
-// arrivingFlights(@Parent() airport: Airport) {
-//   return this.flightService.findArrivingFlights(airport.id);
-// }
-
-// @ResolveField(() => [Staff], { nullable: true })
-// staff(@Parent() airport: Airport) {
-//   return this.staffService.findByAirport(airport.id);
-// }

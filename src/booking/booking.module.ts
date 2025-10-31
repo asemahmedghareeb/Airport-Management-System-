@@ -16,6 +16,6 @@ import { BookingLoader } from './booking.loader';
     forwardRef(() => PassengerModule),
   ],
   providers: [BookingService, BookingResolver, BookingLoader],
-  exports: [BookingService, BookingLoader], // ✅ must export
+  exports: [BookingService, BookingLoader], 
 })
 export class BookingModule {}

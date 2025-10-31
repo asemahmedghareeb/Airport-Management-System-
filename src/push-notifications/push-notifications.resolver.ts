@@ -6,6 +6,8 @@ import { RegisterPushDeviceInput } from './dto/register-push-device.input';
 import { NotificationResponse } from './dto/notification-response.model';
 import { SendNotificationInput } from './dto/send-notification.input';
 import { OneSignalService } from './onesignal.service';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @Resolver(() => PushDevice)
 export class PushDeviceResolver {
@@ -14,6 +16,7 @@ export class PushDeviceResolver {
     private readonly oneSignalService: OneSignalService,
   ) {}
 
+  @UseGuards(AuthGuard)
   @Mutation(() => PushDevice)
   async registerPushDevice(
     @Args('input') input: RegisterPushDeviceInput,
@@ -35,7 +38,6 @@ export class PushDeviceResolver {
       { en: input.message },
       input.playerIds,
     );
-    console.log(result);
     return {
       id: result.id,
       recipients: result.recipients,

@@ -113,7 +113,6 @@ export class StaffResolver {
   @ResolveField(() => User)
   user(
     @Parent() staff: Staff,
-    // One-to-one: from AuthLoader
     @Loader('userById') userLoader: DataLoader<string, User>,
   ): Promise<User> | null {
     if (!staff.userId) return null;
@@ -123,7 +122,6 @@ export class StaffResolver {
   @ResolveField(() => Airport)
   airport(
     @Parent() staff: Staff,
-    // One-to-one/Many-to-One: from AirportLoader
     @Loader('airportById') airportLoader: DataLoader<string, Airport>,
   ): Promise<Airport> | null {
     if (!staff.airportId) return null;
@@ -133,29 +131,9 @@ export class StaffResolver {
   @ResolveField(() => [FlightStaff], { nullable: true })
   flightAssignments(
     @Parent() staff: Staff,
-    // One-to-many: New loader created below
     @Loader('flightAssignmentsByStaffId')
     flightAssignmentsLoader: DataLoader<string, FlightStaff[]>,
   ): Promise<FlightStaff[]> {
     return flightAssignmentsLoader.load(staff.id);
   }
-
-  // @ResolveField(() => User)
-  // user(@Parent() staff: Staff): Promise<User | null> {
-  //   // Uses the explicit foreign key to fetch the User
-  //   return this.staffService.findUserByStaffId(staff.userId);
-  // }
-
-  // @ResolveField(() => Airport)
-  // airport(@Parent() staff: Staff): Promise<Airport | null> {
-  //   // Uses the explicit foreign key to fetch the Airport
-
-  //   return this.staffService.findAirportByStaffId(staff.airportId);
-  // }
-
-  // @ResolveField(() => [FlightStaff], { nullable: true })
-  // flightAssignments(@Parent() staff: Staff): Promise<FlightStaff[]> {
-  //   // Uses the primary key to fetch assignments
-  //   return this.staffService.findFlightAssignmentsByStaffId(staff.id);
-  // }
 }

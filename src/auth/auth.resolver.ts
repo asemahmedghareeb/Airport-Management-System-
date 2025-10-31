@@ -23,6 +23,10 @@ class Me {
   role: string;
 }
 
+interface IUser {
+  userId: string;
+  role: string;
+}
 @Resolver(() => User)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
@@ -48,8 +52,8 @@ export class AuthResolver {
 
   @UseGuards(AuthGuard)
   @Query(() => Me, { name: 'me' })
-  async me(@CurrentUser() user: { userId: string; role: string }) {
-    return user;
+  async me(@CurrentUser() user: IUser) {
+    return this.authService.findOne(user.userId);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

@@ -1,10 +1,9 @@
-
 services:
   node-app:
     container_name: Airport-management-system-container
     build: .
     volumes:
-       - ./src:/app/src
+      - ./src:/app/src
     ports:
       - "3000:3000"
     env_file:
@@ -15,15 +14,14 @@ services:
       - redis
       - postgres
 
-
   redis:
     image: redis
     restart: always
     ports:
       - "6379:6379"
+    hostname: redis
     volumes:
       - redis-db:/data
-
 
   postgres:
     image: postgres:15
