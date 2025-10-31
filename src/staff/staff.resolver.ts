@@ -19,10 +19,19 @@ import { User } from 'src/auth/entities/user.entity';
 import { Airport } from 'src/airport/entities/airport.entity'; 
 import DataLoader from 'dataloader';
 import { Loader } from 'src/dataloader/decorators/loader.decorator';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/role.enum';
 
+@UseGuards(AuthGuard)
 @Resolver(() => Staff)
 export class StaffResolver {
   constructor(private readonly staffService: StaffService) {}
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => PaginatedStaff, {
     name: 'staffMembers',
     description:
@@ -36,6 +45,8 @@ export class StaffResolver {
     return this.staffService.findAll(pagination, filter);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => Staff, {
     name: 'staffMember',
     description: 'Retrieve a single staff member by ID',
@@ -44,6 +55,8 @@ export class StaffResolver {
     return this.staffService.findOne(id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => [Staff], {
     name: 'staffByAirport',
     description:
@@ -55,6 +68,8 @@ export class StaffResolver {
     return this.staffService.findByAirport(airportId);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => [Staff], {
     name: 'staffByFlight',
     description:
@@ -66,11 +81,15 @@ export class StaffResolver {
     return this.staffService.findByFlight(flightId);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Staff, { description: 'Update a staff member (Admin only)' })
   updateStaff(@Args('input') input: UpdateStaffInput): Promise<Staff> {
     return this.staffService.update(input);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Staff, {
     description:
       'Delete a staff member and their associated user account (Admin only)',
@@ -79,6 +98,8 @@ export class StaffResolver {
     return this.staffService.delete(id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => FlightStaff, {
     description: 'Assign a staff member to a flight (Admin/Staff only)',
   })

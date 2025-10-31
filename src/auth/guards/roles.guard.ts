@@ -1,3 +1,4 @@
+
 import {
   Injectable,
   CanActivate,
@@ -29,10 +30,14 @@ export class RolesGuard implements CanActivate {
         'No user found in request - authenticate first',
       );
     }
-
-    const userRoles: string[] = user.roles || [];
+    console.log(user.role);
+    const userRoles: string[] = user.role || [];
     const has = requiredRoles.some((role) => userRoles.includes(role));
-    if (!has) throw new ForbiddenException('Missing required role');
+    if (!has)
+      throw new ForbiddenException(
+        `Required role: ${requiredRoles.join(', ')}`,
+      );
+
     return true;
   }
 }

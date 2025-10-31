@@ -8,9 +8,10 @@ import { Passenger } from '../passenger/entities/passenger.entity';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { UserLoader } from './user.loader';
+import { FlightStaff } from 'src/flight/entities/flight_staff';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Passenger, Staff, Airport])],
+  imports: [TypeOrmModule.forFeature([User, Passenger, Staff, Airport, FlightStaff])],
   providers: [AuthResolver, AuthService, CaslAbilityFactory, UserLoader],
   exports: [AuthService, UserLoader],
 })

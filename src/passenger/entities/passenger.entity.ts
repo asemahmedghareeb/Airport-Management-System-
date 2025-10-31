@@ -27,12 +27,12 @@ export class Passenger {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  nationality?: string; // --- Foreign Key (Temporarily nullable for data migration) ---
+  nationality?: string; 
 
   @Column({ type: 'uuid' })
-  userId: string; // === Relationships ===
+  userId: string; 
 
-  @Field(() => User) // ✅ FIX: Must be nullable in GraphQL to allow null returns
+  @Field(() => User) 
   // @OneToOne(() => User, (user) => user.passenger, { onDelete: 'CASCADE' })
   @OneToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })

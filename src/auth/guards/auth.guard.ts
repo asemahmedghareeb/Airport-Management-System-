@@ -17,7 +17,7 @@ export class AuthGuard implements CanActivate {
     // Support both HTTP and GraphQL
     const headers = req?.headers || {};
     const auth = headers.authorization || headers.Authorization;
-    if (!auth) throw new UnauthorizedException('Missing authorization header');
+    if (!auth) throw new UnauthorizedException('You are unauthorized');
 
     const parts = auth.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer')
@@ -27,6 +27,7 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = this.jwtService.verify(token);
+      console.log(payload);
       // attach user to request so other guards/resolvers can read it
       req.user = payload;
       return true;

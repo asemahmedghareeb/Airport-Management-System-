@@ -1,8 +1,11 @@
+import { FlightStaff } from './../flight/entities/flight_staff';
+import { Role } from 'src/auth/role.enum';
 import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -10,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Passenger } from '../passenger/entities/passenger.entity';
 import { User } from './entities/user.entity';
-import { AuthResponse } from './dto/authResponse.dto';
+import { AuthResponse } from './dto/loginResponse.dto';
 import { LoginInput } from './dto/loginInput.dto';
 import { RegisterPassengerInput } from './dto/passenger.dto';
 import { Staff } from 'src/staff/entities/staff.entity';
@@ -26,6 +29,8 @@ export class AuthService {
     private passengersRepository: Repository<Passenger>,
     @InjectRepository(Staff)
     private staffRepository: Repository<Staff>,
+    @InjectRepository(FlightStaff)
+    private flightStaffRepository: Repository<FlightStaff>,
     @InjectRepository(Airport)
     private airportsRepository: Repository<Airport>,
     private jwtService: JwtService,
@@ -34,7 +39,7 @@ export class AuthService {
   // --- Passenger Registration ---
   async registerPassenger(
     input: RegisterPassengerInput,
-  ): Promise<AuthResponse> {
+  ): Promise<{ msg: string }> {
     // 1. Check if user already exists
     const existingUser = await this.usersRepository.findOne({
       where: { email: input.email },
@@ -63,22 +68,15 @@ export class AuthService {
     });
     await this.passengersRepository.save(newPassenger);
 
-    // 5. Generate JWT Token
-    const payload = { userId: savedUser.id, role: savedUser.role };
-    const accessToken = this.jwtService.sign(payload);
-
     return {
-      accessToken,
+      msg: 'Passenger registered successfully',
     };
   }
 
   // src/auth/auth.service.ts (inside registerStaff method)
 
-  async registerStaff(input: RegisterStaffInput): Promise<AuthResponse> {
-    // 1-4. Checks and Password Hashing (REMAIN UNCHANGED)
-    // ...
-
-    // 5. Find the Airport (REMAIN UNCHANGED)
+  async registerStaff(input: RegisterStaffInput): Promise<{ msg: string }> {
+    // 1. Find the Airport
     const airport = await this.airportsRepository.findOne({
       where: { id: input.airportId },
     });
@@ -88,17 +86,22 @@ export class AuthService {
       );
     }
 
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: input.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('A user with this email already exists.');
+    }
+
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
-    // 5. Create the base User entity
-    // ... (Steps 1-5 remain)
     const newUser = this.usersRepository.create({
       email: input.email,
       password: hashedPassword,
       role: input.userRole,
     });
-
-    const savedUser = await this.usersRepository.save(newUser); // 6. Create the Staff entity linked to the User and Airport
+    const savedUser = await this.usersRepository.save(newUser);
 
     const newStaff = this.staffRepository.create({
       user: savedUser,
@@ -106,17 +109,12 @@ export class AuthService {
       employeeId: input.employeeId,
       name: input.name,
       role: input.staffRole,
+      userId: savedUser.id,
     });
-    const savedStaff = await this.staffRepository.save(newStaff);
 
-    // 7. CRITICAL FIX: Update the User entity with the new Staff ID and save it.
-    savedUser.id = savedStaff.id; // Assuming the field is named 'staff' on the User entity
-    await this.usersRepository.save(savedUser);
+    await this.staffRepository.save(newStaff);
 
-    const payload = { userId: savedUser.id, role: savedUser.role };
-    const accessToken = this.jwtService.sign(payload);
-
-    return { accessToken };
+    return { msg: 'Staff registered successfully' };
   }
 
   // --- General Login ---
@@ -124,7 +122,6 @@ export class AuthService {
     // 1. Find the User
     const user = await this.usersRepository.findOne({
       where: { email },
-      // Select the password explicitly since it's excluded by default
       select: ['id', 'email', 'password', 'role'],
     });
 
@@ -138,12 +135,40 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
+    if (user.role === Role.PASSENGER) {
+      const passenger = await this.passengersRepository.findOne({
+        where: { userId: user.id },
+      });
+      const payload = {
+        userId: user.id,
+        role: user.role,
+        passengerId: passenger?.id,
+      };
+      const accessToken = this.jwtService.sign(payload);
+      return { accessToken };
+    }
+
+    if (user.role === Role.STAFF) {
+      const staff = await this.staffRepository.findOne({
+        where: { userId: user.id },
+      });
+      const flightStaff = await this.flightStaffRepository.find({
+        where: { staffId: staff?.id },
+      });
+
+      const payload = {
+        userId: user.id,
+        role: user.role,
+        staffId: staff?.id,
+        airportId: staff?.airportId,
+        flights: flightStaff?.map((flightStaff) => flightStaff.flightId),
+      };
+      const accessToken = this.jwtService.sign(payload);
+      return { accessToken };
+    }
     // 3. Generate JWT Token
     const payload = { userId: user.id, role: user.role };
     const accessToken = this.jwtService.sign(payload);
-
-    // 4. Return the response (excluding the password property)
-    // NOTE: This ensures the User object sent back doesn't expose the password hash
 
     return {
       accessToken,
@@ -153,7 +178,7 @@ export class AuthService {
   async findOne(id: string): Promise<User> {
     const user: User | null = await this.usersRepository.findOne({
       where: { id },
-      relations: ['staff', 'passenger', 'pushDevices'],
+      relations: ['pushDevices'],
     });
     if (!user) {
       throw new NotFoundException(`User with ID "${id}" not found.`);

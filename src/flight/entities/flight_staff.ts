@@ -3,10 +3,9 @@ import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm';
 import { Flight } from './flight.entity';
 import { Staff } from 'src/staff/entities/staff.entity';
 
-@ObjectType() // Expose as GraphQL type
+@ObjectType() 
 @Entity('flight_staff')
 export class FlightStaff {
-  // === Composite Primary Keys ===
 
   @Field(() => ID)
   @PrimaryColumn()
@@ -16,13 +15,10 @@ export class FlightStaff {
   @PrimaryColumn()
   staffId: string;
 
-  // === Extra column ===
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  assignedRoleOnFlight?: string; // e.g., "Captain", "First Officer"
-
-  // === Relationships ===
+  assignedRoleOnFlight?: string; 
 
   @Field(() => Flight)
   @ManyToOne(() => Flight, (flight) => flight.staffAssignments, {

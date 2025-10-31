@@ -119,13 +119,22 @@ type AuthResponse {
   user: User!
 }
 
+type RegisterResponse {
+  msg: String!
+}
+
+type Me {
+  userId: String!
+  role: String!
+}
+
 type NotificationResponse {
   id: String!
   recipients: Float!
 }
 
 type Query {
-  me: User!
+  me: Me!
   user(id: String!): User!
   airports(pagination: PaginationInput): PaginatedAirportResponse!
   airport(id: ID!): Airport!
@@ -155,7 +164,7 @@ type Query {
   """
   myBookings(
     """The ID of the passenger."""
-    passengerId: ID!
+    passengerId: ID
   ): [Booking!]!
 
   """Retrieve all passengers with pagination and filters (Admin/Staff only)"""
@@ -190,15 +199,15 @@ input PassengerFilterInput {
 }
 
 type Mutation {
-  registerPassenger(input: RegisterPassengerInput!): AuthResponse!
-  registerStaff(input: RegisterStaffInput!): AuthResponse!
+  registerPassenger(input: RegisterPassengerInput!): RegisterResponse!
+  registerStaff(input: RegisterStaffInput!): RegisterResponse!
   login(input: LoginInput!): AuthResponse!
   createAirport(input: CreateAirportInput!): Airport!
   updateAirport(input: UpdateAirportInput!): Airport!
   removeAirport(id: ID!): Boolean!
   createFlight(input: CreateFlightInput!): Flight!
   updateFlight(input: UpdateFlightInput!): Flight!
-  removeFlight(id: ID!): Boolean!
+  removeFlight(id: ID): Boolean!
 
   """Update a staff member (Admin only)"""
   updateStaff(input: UpdateStaffInput!): Staff!
@@ -218,7 +227,7 @@ type Mutation {
   updateBooking(input: UpdateBookingInput!): Booking!
 
   """Cancel a booking (Admin/Passenger self-delete)"""
-  deleteBooking(id: ID!): Booking!
+  deleteBooking(id: ID): Booking!
 
   """Update a passenger record (Admin/Passenger self-update)"""
   updatePassenger(input: UpdatePassengerInput!): Passenger!

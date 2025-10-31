@@ -16,19 +16,22 @@ import { UpdatePassengerInput } from './dto/passengerUpdateInput.dto';
 import { PassengerFilterInput } from './dto/passengerFilterInput.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
-import { AuthService } from 'src/auth/auth.service';
-import { BookingService } from 'src/booking/booking.service';
+
 import { Loader } from 'src/dataloader/decorators/loader.decorator';
 import DataLoader from 'dataloader';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/role.enum';
 
+@UseGuards(AuthGuard)
 @Resolver(() => Passenger)
 export class PassengerResolver {
-  constructor(
-    private readonly passengerService: PassengerService,
-    private readonly authService: AuthService,
-    private readonly bookingService: BookingService,
-  ) {} // --- QUERIES and MUTATIONS (Methods remain unchanged) ---
+  constructor(private readonly passengerService: PassengerService) {} // --- QUERIES and MUTATIONS (Methods remain unchanged) ---
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => PaginatedPassenger, {
     name: 'passengers',
     description:
@@ -42,6 +45,8 @@ export class PassengerResolver {
     return this.passengerService.findAll(pagination, filter);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => Passenger, {
     name: 'passenger',
     description:
@@ -51,6 +56,8 @@ export class PassengerResolver {
     return this.passengerService.findOne(id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Passenger, {
     description: 'Update a passenger record (Admin/Passenger self-update)',
   })
@@ -60,6 +67,8 @@ export class PassengerResolver {
     return this.passengerService.update(input);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Passenger, {
     description:
       'Delete a passenger and their associated user account (Admin only)',
@@ -68,10 +77,9 @@ export class PassengerResolver {
     @Args('id', { type: () => ID }) id: string,
   ): Promise<Passenger> {
     return this.passengerService.delete(id);
-  } // --- FIELD RESOLVERS ---
+  } 
 
-
-
+  
   @ResolveField(() => User, { nullable: true })
   user(
     @Parent() passenger: Passenger,
@@ -86,7 +94,8 @@ export class PassengerResolver {
   bookings(
     @Parent() passenger: Passenger,
     // Use the one-to-many loader for Bookings by Passenger ID (from BookingLoader)
-    @Loader('bookingsByPassengerId') bookingsLoader: DataLoader<string, Booking[]>,
+    @Loader('bookingsByPassengerId')
+    bookingsLoader: DataLoader<string, Booking[]>,
   ): Promise<Booking[]> {
     if (!passenger.id) return Promise.resolve([]);
     return bookingsLoader.load(passenger.id);

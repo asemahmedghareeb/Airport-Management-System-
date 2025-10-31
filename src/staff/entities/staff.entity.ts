@@ -9,10 +9,10 @@ import {
   OneToOne,
   ManyToOne,
   OneToMany,
-  JoinColumn, // 👈 Import JoinColumn
+  JoinColumn,
 } from 'typeorm';
 
-@ObjectType() // Expose this entity as a GraphQL type
+@ObjectType()
 @Entity('staff')
 export class Staff {
   @Field(() => ID)
@@ -29,26 +29,26 @@ export class Staff {
 
   @Field()
   @Column()
-  role: string; // === EXPLICIT FOREIGN KEY COLUMNS ===
+  role: string;
 
-  @Column({ type: 'uuid' }) // Assuming mandatory OneToOne
+  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid' })
+  airportId: string;
+
+  @Column({ type: 'uuid' })
   userId: string;
 
-  @Column({ type: 'uuid' }) // Assuming mandatory ManyToOne
-  airportId: string; // ====================================
-  // === Relationships ===
   @Field(() => User)
   // @OneToOne(() => User, (user) => user.staff, { onDelete: 'CASCADE' })
   @OneToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' }) // 👈 Link to the new column
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @Field(() => Airport)
   @ManyToOne(() => Airport, (airport) => airport.staff)
-  @JoinColumn({ name: 'airportId' }) // 👈 Link to the new column
+  @JoinColumn({ name: 'airportId' })
   airport: Airport;
 
-  
   @Field(() => [FlightStaff], { nullable: 'itemsAndList' })
   @OneToMany(() => FlightStaff, (flightStaff) => flightStaff.staff)
   flightAssignments: FlightStaff[];

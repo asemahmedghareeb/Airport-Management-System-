@@ -18,11 +18,11 @@ export class FlightService {
     private readonly flightRepo: Repository<Flight>,
     @InjectRepository(Airport)
     private readonly airportRepo: Repository<Airport>,
-    private readonly oneSignalService: OneSignalService,
     @InjectRepository(Booking)
     private readonly bookingRepo: Repository<Booking>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   async create(input: CreateFlightInput): Promise<Flight> {
@@ -46,9 +46,9 @@ export class FlightService {
     return this.flightRepo.save(flight);
   }
 
-  async update(id: string, input: UpdateFlightInput): Promise<Flight> {
+  async update(input: UpdateFlightInput): Promise<Flight> {
     const flight = await this.flightRepo.findOne({
-      where: { id },
+      where: { id: input.id },
       relations: ['departureAirport', 'destinationAirport'],
     });
     if (!flight) throw new NotFoundException('Flight not found');
@@ -91,7 +91,7 @@ export class FlightService {
         flight.status,
       );
       const Bookings = await this.bookingRepo.find({
-        where: { flightId: id },
+        where: { flightId: input.id },
         relations: ['passenger'],
       });
       const userIds = Bookings.map((booking) => booking.passenger.userId);
@@ -107,7 +107,7 @@ export class FlightService {
         )
         .flat();
 
-      console.log(PlayerIds);
+      // console.log(PlayerIds);
 
       try {
         await this.oneSignalService.sendNotification(

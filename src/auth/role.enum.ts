@@ -1,9 +1,9 @@
 export enum Role {
-  PASSENGER = 'user',
-  ADMIN = 'admin',
-  STAFF = 'staff',
-  PILOT = 'pilot',
-  CREW = 'crew',
-  SECURITY = 'security',
-  GROUND_STAFF = 'ground_staff',
+  PASSENGER = 'Passenger',
+  ADMIN = 'Admin',
+  STAFF = 'Staff',
+  PILOT = 'Pilot',
+  CREW = 'Crew',
+  SECURITY = 'Security',
+  GROUND_STAFF = 'Ground_Staff',
 }

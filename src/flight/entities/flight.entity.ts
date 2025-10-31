@@ -11,7 +11,7 @@ import {
   JoinColumn
 } from 'typeorm';
 
-@ObjectType() // Expose this entity as a GraphQL type
+@ObjectType() 
 @Entity('flights')
 export class Flight {
   @Field(() => ID)
@@ -43,24 +43,23 @@ export class Flight {
     type: 'enum',
     enum: ['ON_TIME', 'DELAYED', 'CANCELED'],
   })
-  status: string;
+  status: string; 
 
-  // === Relationships ===
-  @Column({ type: 'uuid' })
-  departureAirportId: string; // 👈 ADDED EXPLICIT FOREIGN KEY
 
   @Column({ type: 'uuid' })
-  destinationAirportId: string; // 👈 ADDED EXPLICIT FOREIGN KEY
-  // === Relationships ===
+  departureAirportId: string;
+
+  @Column({ type: 'uuid' })
+  destinationAirportId: string;
 
   @Field(() => Airport)
   @ManyToOne(() => Airport, (airport) => airport.departingFlights)
-  @JoinColumn({ name: 'departureAirportId' }) // 👈 Link to the new column
+  @JoinColumn({ name: 'departureAirportId' })
   departureAirport: Airport;
 
   @Field(() => Airport)
   @ManyToOne(() => Airport, (airport) => airport.arrivingFlights)
-  @JoinColumn({ name: 'destinationAirportId' }) // 👈 Link to the new column
+  @JoinColumn({ name: 'destinationAirportId' })
   destinationAirport: Airport;
 
   @Field(() => [Booking], { nullable: 'itemsAndList' })
