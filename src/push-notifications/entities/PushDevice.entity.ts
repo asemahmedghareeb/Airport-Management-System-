@@ -6,6 +6,7 @@ import {
   Column,
   ManyToOne,
   Index,
+  JoinColumn,
 } from 'typeorm';
 
 export enum DeviceType {
@@ -29,8 +30,9 @@ export class PushDevice {
   @Field(() => String)
   @Column({ type: 'uuid' })
   userId: string;
-
+//=>>>
   @ManyToOne(() => User, (user) => user.pushDevices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @Field()

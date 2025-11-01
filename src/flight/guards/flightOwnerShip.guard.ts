@@ -1,17 +1,17 @@
+
 import { BadRequestException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.enum';
-import { IStaff } from '../flight.resolver';
-
+import  {StaffPayload} from 'src/staff/interfaces/staff.payload';
 
 @Injectable()
 export class FlightOwnershipGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = GqlExecutionContext.create(context);
     const { input } = ctx.getArgs();
-    const staff: IStaff = ctx.getContext().req.user;
+    const staff: StaffPayload = ctx.getContext().req.user;
     if (staff.role === Role.ADMIN) return true;
 
     const flightIds = staff.flights;

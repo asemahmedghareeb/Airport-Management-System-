@@ -6,22 +6,14 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.enum';
-
-interface IPassenger {
-  userId: string;
-  role: string;
-  passengerId: string;
-  bookings: string[];
-}
+import { PassengerPayload } from 'src/passenger/interfaces/passenger.payload';
 
 @Injectable()
 export class IsOwnerGuard implements CanActivate {
-  t;
-
   canActivate(context: ExecutionContext): boolean {
     const ctx = GqlExecutionContext.create(context);
     const args = ctx.getArgs();
-    const user = ctx.getContext().req.user as IPassenger;
+    const user = ctx.getContext().req.user as PassengerPayload;
 
     if (user.role === Role.ADMIN) {
       return true;

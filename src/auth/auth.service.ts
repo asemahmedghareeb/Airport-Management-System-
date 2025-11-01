@@ -39,11 +39,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  // --- Passenger Registration ---
   async registerPassenger(
     input: RegisterPassengerInput,
   ): Promise<{ msg: string }> {
-    // 1. Check if user already exists
     const existingUser = await this.usersRepository.findOne({
       where: { email: input.email },
     });
@@ -51,20 +49,17 @@ export class AuthService {
       throw new BadRequestException('User with this email already exists.');
     }
 
-    // 2. Hash the password
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
-    // 3. Create the base User entity (role: 'Passenger')
     const newUser = this.usersRepository.create({
       email: input.email,
       password: hashedPassword,
-      role: 'Passenger', // Assign the specific role
+      role: 'Passenger',
     });
     const savedUser = await this.usersRepository.save(newUser);
 
-    // 4. Create the Passenger entity linked to the User
     const newPassenger = this.passengersRepository.create({
-      user: savedUser, // Link to the new User entity
+      user: savedUser,
       name: input.name,
       passportNumber: input.passportNumber,
       nationality: input.nationality,
@@ -76,10 +71,7 @@ export class AuthService {
     };
   }
 
-  // src/auth/auth.service.ts (inside registerStaff method)
-
   async registerStaff(input: RegisterStaffInput): Promise<{ msg: string }> {
-    // 1. Find the Airport
     const airport = await this.airportsRepository.findOne({
       where: { id: input.airportId },
     });

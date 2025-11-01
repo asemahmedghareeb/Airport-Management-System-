@@ -20,11 +20,6 @@ export class AirportLoader {
         return ids.map((id) => airportMap.get(id) as Airport);
       },   
     );
-
-
-
-  
-
     return {
       airportById: airportByIdLoader,
     };

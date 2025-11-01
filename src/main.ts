@@ -17,7 +17,7 @@ async function bootstrap() {
         message: 'Too many requests, please try again later.',
       },
     }),
-    
+
   );
   app.useGlobalPipes(
     new ValidationPipe({
@@ -43,11 +43,4 @@ bootstrap();
 //opening container bash => docker exec -it   Airport-management-system-container bash
 //for docker logs => docker logs  Airport-management-system-container -f
 
-//admin token
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyZDlmYWQ4MS1hZTQ0LTQwODgtYjY2Zi01MTU5NjliMTU2ZjYiLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NjE4ODM1NjAsImV4cCI6MTc2MjQ4ODM2MH0.yyhM4tjz8BZXCF3fA3vWur5wl_1JaWgsRWwhqaOd1bg
 
-//staff token
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxZTFmMjVkMy00MzE0LTRhZTItYWQ4OC1jZmU1MTMzMDAyZTciLCJyb2xlIjoiU3RhZmYiLCJzdGFmZklkIjoiYjE5OGRjOTYtOTU1MC00NzBhLTg0ZjctMmQ0ZTY0MDkyNTllIiwiYWlycG9ydElkIjoiMGQxN2QxN2UtNTU5OS00ZjEzLTkzNmQtOWQ2MjliZGIxOGM0IiwiZmxpZ2h0cyI6WyJjNzcwZDFiMi1iNTIxLTQwOTUtYmIwZC1mMWIzYjBlZjI2NmMiXSwiaWF0IjoxNzYxODkzNzMxLCJleHAiOjE3NjI0OTg1MzF9.nrz-IphVXCptaOqsDz2ygTa499PeB9bNXpr8TXJVjq0
-
-//passenger token
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4ODU4N2JlZS00YzNkLTRhYTQtODc2My0zMDc2OWJjZjNlNDQiLCJyb2xlIjoiUGFzc2VuZ2VyIiwicGFzc2VuZ2VySWQiOiJmZjVkZTY5MC03NDkyLTQ3NWMtYWI3ZS1lZGVhYWIyZjM3YTUiLCJib29raW5ncyI6WyJkZWNhN2I5NS00ZGQ3LTQ0NGUtOGJlOC1kMTVkYzUwOTI5YWQiXSwiaWF0IjoxNzYxOTEzMDk2LCJleHAiOjE3NjI1MTc4OTZ9.24sp4lrEuIEmvVTM67BbKGcU_JakW6m2BLY7GJGuCio

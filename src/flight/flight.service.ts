@@ -12,7 +12,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bullmq';
 
-@Injectable()
+@Injectable() 
 export class FlightService {
   constructor(
     @InjectRepository(Flight)

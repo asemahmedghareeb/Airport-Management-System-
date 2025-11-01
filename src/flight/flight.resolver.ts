@@ -26,13 +26,6 @@ import { Role } from 'src/auth/role.enum';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { FlightOwnershipGuard } from './guards/flightOwnerShip.guard';
 
-export interface IStaff {
-  userId: string;
-  role: string;
-  staffId: string;
-  airportId: string;
-  flights: string[];
-}
 
 @UseGuards(AuthGuard)
 @Resolver(() => Flight)
