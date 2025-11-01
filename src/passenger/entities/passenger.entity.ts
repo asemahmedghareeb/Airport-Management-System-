@@ -33,7 +33,6 @@ export class Passenger {
   userId: string; 
 
   @Field(() => User) 
-  // @OneToOne(() => User, (user) => user.passenger, { onDelete: 'CASCADE' })
   @OneToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;

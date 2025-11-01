@@ -1,4 +1,3 @@
-// src/flight/flight.loader.ts
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
 import { Flight } from './entities/flight.entity';

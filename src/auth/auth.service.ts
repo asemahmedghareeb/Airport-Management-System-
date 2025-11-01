@@ -120,9 +120,7 @@ export class AuthService {
     return { msg: 'Staff registered successfully' };
   }
 
-  // --- General Login ---
   async login({ email, password }: LoginInput): Promise<AuthResponse> {
-    // 1. Find the User
     const user = await this.usersRepository.findOne({
       where: { email },
       select: ['id', 'email', 'password', 'role'],
@@ -132,7 +130,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    // 2. Compare the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials.');
@@ -174,7 +171,6 @@ export class AuthService {
       const accessToken = this.jwtService.sign(payload);
       return { accessToken };
     }
-    // 3. Generate JWT Token
     const payload = { userId: user.id, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
@@ -194,7 +190,6 @@ export class AuthService {
     return user;
   }
 
-  // New method for DataLoader batching
   async findByIds(userIds: string[]): Promise<User[]> {
     return this.usersRepository.find({
       where: { id: In(userIds) },

@@ -1,4 +1,3 @@
-// src/notification/dto/notification-response.model.ts
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()

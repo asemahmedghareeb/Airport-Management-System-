@@ -1,4 +1,3 @@
-// src/passenger/passenger.loader.ts
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
 import { Passenger } from './entities/passenger.entity';

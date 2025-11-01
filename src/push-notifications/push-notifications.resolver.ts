@@ -8,6 +8,7 @@ import { SendNotificationInput } from './dto/send-notification.input';
 import { OneSignalService } from './onesignal.service';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Resolver(() => PushDevice)
 export class PushDeviceResolver {
@@ -20,13 +21,11 @@ export class PushDeviceResolver {
   @Mutation(() => PushDevice)
   async registerPushDevice(
     @Args('input') input: RegisterPushDeviceInput,
-    // Use an Authentication Guard/Decorator to get the logged-in User's ID
-    // @CurrentUser() user: User,
+    @CurrentUser() user: { userId: string },
   ) {
-    // 🛑 IMPORTANT: Replace this placeholder with the actual authenticated user's ID
-    const authenticatedUserId = '88587bee-4c3d-4aa4-8763-30769bcf3e44';
+    // const authenticatedUserId = '88587bee-4c3d-4aa4-8763-30769bcf3e44';
 
-    return this.pushDeviceService.registerDevice(authenticatedUserId, input);
+    return this.pushDeviceService.registerDevice(user.userId, input);
   }
 
   @Mutation(() => NotificationResponse)

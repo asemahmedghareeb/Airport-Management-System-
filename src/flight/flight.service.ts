@@ -11,7 +11,6 @@ import { Booking } from 'src/booking/entities/booking.entity';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bullmq';
-import { EmailsService } from 'src/emails/emails.service';
 
 @Injectable()
 export class FlightService {
@@ -26,7 +25,6 @@ export class FlightService {
     private readonly userRepo: Repository<User>,
     @InjectQueue('notification') private readonly notificationQueue: Queue,
     @InjectQueue('email') private readonly emailQueue: Queue,   
-    private readonly emailsService: EmailsService,
   ) {}
 
   async create(input: CreateFlightInput): Promise<Flight> {
@@ -107,19 +105,17 @@ export class FlightService {
         )
         .flat();
 
-      const usersEmails=users.map((user)=>user.email)
-      console.log(usersEmails)
+     
       for (const user of users) {
         if (user.email) {
           await this.emailQueue.add(
-            'send-status-email', // Job name
+            'send-status-email',
             {
               toEmail: user.email,
               flightNumber: updatedFlight.flightNumber,
               newStatus: updatedFlight.status,
             },
             {
-              // Optional: Unique job ID for tracking/idempotency
               jobId: `flight-${updatedFlight.id}-email-${user.id}-${Date.now()}`
             }
           );

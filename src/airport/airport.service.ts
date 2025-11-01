@@ -72,8 +72,6 @@ export class AirportService {
     return true;
   }
 
-  // src/airport/airport.service.ts
-  // Add this method to the AirportService class
   async findByIds(ids: string[]): Promise<Airport[]> {
     return this.airportRepository.find({ where: { id: In(ids) } });
   }

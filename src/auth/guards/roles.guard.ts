@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   CanActivate,
@@ -18,9 +17,8 @@ export class RolesGuard implements CanActivate {
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
-    if (!requiredRoles || requiredRoles.length === 0) return true; // no roles required
+    if (!requiredRoles || requiredRoles.length === 0) return true;
 
-    // For GraphQL, turn execution context into GQL context
     const ctx = GqlExecutionContext.create(context);
     const req = ctx.getContext().req;
     const user = req?.user;

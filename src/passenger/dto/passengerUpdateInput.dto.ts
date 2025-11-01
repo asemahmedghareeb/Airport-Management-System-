@@ -1,5 +1,5 @@
-import { InputType, Field, ID } from "@nestjs/graphql";
-import { IsOptional, IsString, IsUUID } from "class-validator";
+import { InputType, Field, ID } from '@nestjs/graphql';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 
 @InputType()
 export class UpdatePassengerInput {
@@ -16,9 +16,8 @@ export class UpdatePassengerInput {
   @IsOptional()
   @IsString()
   nationality?: string;
-  
-  // Passport number is typically unchangeable, but allowing it to be optional is safer.
-  @Field({ nullable: true }) 
+
+  @Field({ nullable: true })
   @IsOptional()
   @IsString()
   passportNumber?: string;

@@ -9,7 +9,7 @@ async function bootstrap() {
   app.use(
     rateLimit({
       windowMs: 60 * 1000,
-      max: 100, // limit each IP to 100 requests per minute
+      max: 100,
       standardHeaders: true,
       legacyHeaders: false,
       message: {
@@ -17,8 +17,8 @@ async function bootstrap() {
         message: 'Too many requests, please try again later.',
       },
     }),
+    
   );
-  await app.listen(process.env.PORT!);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -26,11 +26,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  await app.listen(process.env.PORT!);
   console.log(`Server started on http://localhost:${process.env.PORT}/graphql`);
 }
 bootstrap();
-
-// docker-compose => it is a tool that allows you to define and run multi-container Docker applications.
 
 //to run the containers in production mode=>   docker-compose -f docker-compose.yml  -f  docker-compose.prod.yml up -d
 //to run the containers in development mode=>  docker-compose -f docker-compose.yml  -f  docker-compose.dev.yml up -d
@@ -43,13 +42,6 @@ bootstrap();
 
 //opening container bash => docker exec -it   Airport-management-system-container bash
 //for docker logs => docker logs  Airport-management-system-container -f
-
-//dockerfile => docker image => docker container
-
-
-
-
-
 
 //admin token
 // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyZDlmYWQ4MS1hZTQ0LTQwODgtYjY2Zi01MTU5NjliMTU2ZjYiLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NjE4ODM1NjAsImV4cCI6MTc2MjQ4ODM2MH0.yyhM4tjz8BZXCF3fA3vWur5wl_1JaWgsRWwhqaOd1bg

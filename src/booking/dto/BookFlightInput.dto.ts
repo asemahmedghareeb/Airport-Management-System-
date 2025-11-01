@@ -3,7 +3,7 @@ import { IsString, IsUUID, IsNotEmpty, IsOptional } from 'class-validator';
 
 @InputType()
 export class BookFlightInput {
-  @Field(() => ID ,{ nullable: true })
+  @Field(() => ID, { nullable: true })
   @IsOptional()
   @IsUUID()
   passengerId?: string;
@@ -15,7 +15,7 @@ export class BookFlightInput {
   @Field()
   @IsString()
   @IsNotEmpty({ message: 'Seat number is required.' })
-  seatNumber: string; // Using string as per Booking entity definition
+  seatNumber: string;
 }
 
 @InputType()
@@ -27,5 +27,5 @@ export class UpdateBookingInput {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  seatNumber?: string; // Only seat number can be updated
+  seatNumber?: string;
 }

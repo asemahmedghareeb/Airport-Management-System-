@@ -21,14 +21,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
-// import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
-
-interface IPassenger {
-  userId: string;
-  role: string;
-  passengerId: string;
-}
 
 @UseGuards(AuthGuard)
 @Resolver(() => Booking)
@@ -50,13 +43,8 @@ export class BookingResolver {
   @UseGuards(RolesGuard, IsOwnerGuard)
   @Mutation(() => Booking, {
     name: 'updateBooking',
-    description:
-      'Update a booking (e.g., change seat number) (Admin/Passenger self-update)',
   })
-  updateBooking(
-    @Args('input') input: UpdateBookingInput,
-  ): Promise<Booking> {
-  
+  updateBooking(@Args('input') input: UpdateBookingInput): Promise<Booking> {
     return this.bookingService.updateBooking(input);
   }
 
@@ -64,12 +52,8 @@ export class BookingResolver {
   @UseGuards(RolesGuard, IsOwnerGuard)
   @Mutation(() => Booking, {
     name: 'deleteBooking',
-    description: 'Cancel a booking (Admin/Passenger self-delete)',
   })
-  deleteBooking(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<Booking> {
-
+  deleteBooking(@Args('id', { type: () => ID }) id: string): Promise<Booking> {
     return this.bookingService.deleteBooking(id);
   }
 
@@ -77,8 +61,6 @@ export class BookingResolver {
   @UseGuards(RolesGuard, IsOwnerGuard)
   @Query(() => Booking, {
     name: 'booking',
-    description:
-      'Retrieve a single booking by ID (Admin/Passenger self-lookup)',
   })
   findOne(@Args('id', { type: () => ID }) id: string): Promise<Booking> {
     return this.bookingService.findOne(id);
@@ -88,7 +70,6 @@ export class BookingResolver {
   @UseGuards(RolesGuard)
   @Query(() => PaginatedBooking, {
     name: 'bookings',
-    description: 'Retrieve all bookings with pagination (Admin only)',
   })
   findAll(
     @Args('pagination', { nullable: true })
@@ -101,21 +82,15 @@ export class BookingResolver {
   @UseGuards(RolesGuard, IsOwnerGuard)
   @Query(() => [Booking], {
     name: 'myBookings',
-    description:
-      'Retrieve all bookings and flight details for a passenger (Passenger self-lookup)',
   })
   findBookingsByPassenger(
     @Args('passengerId', {
       type: () => ID,
-      description: 'The ID of the passenger.',
     })
     passengerId: string,
   ): Promise<Booking[]> {
-
     return this.bookingService.findBookingsByPassenger(passengerId);
   }
-
-  // --- FIELD RESOLVERS (N+1 Issue is here) ---
 
   @ResolveField(() => Flight)
   async flight(

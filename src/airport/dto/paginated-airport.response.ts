@@ -1,4 +1,3 @@
-// src/airport/dto/paginated-airport.response.ts
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Airport } from '../entities/airport.entity';
 

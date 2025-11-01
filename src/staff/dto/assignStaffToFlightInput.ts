@@ -14,5 +14,5 @@ export class AssignStaffToFlightInput {
   @Field()
   @IsNotEmpty()
   @IsString()
-  assignedRoleOnFlight: string; // e.g., 'Captain', 'First Officer'
+  assignedRoleOnFlight: string; 
 }

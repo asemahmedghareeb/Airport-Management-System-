@@ -1,5 +1,3 @@
-// src/subscriptions/push-device.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,21 +11,18 @@ export class PushDeviceService {
     private readonly pushDeviceRepo: Repository<PushDevice>,
   ) {}
 
-  
   async registerDevice(
-    userId: string, 
+    userId: string,
     input: RegisterPushDeviceInput,
   ): Promise<PushDevice> {
-    
-   
     let device = await this.pushDeviceRepo.findOne({
       where: { playerId: input.playerId },
     });
 
     if (device) {
       if (device.userId !== userId) {
-         device.userId = userId;
-         return this.pushDeviceRepo.save(device);
+        device.userId = userId;
+        return this.pushDeviceRepo.save(device);
       }
       return device;
     }
@@ -40,6 +35,4 @@ export class PushDeviceService {
 
     return this.pushDeviceRepo.save(newDevice);
   }
-
- 
 }

@@ -1,4 +1,4 @@
-// src/common/decorators/loader.decorator.ts
+
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 

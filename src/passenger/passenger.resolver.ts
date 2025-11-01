@@ -30,11 +30,7 @@ export class PassengerResolver {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Query(() => PaginatedPassenger, {
-    name: 'passengers',
-    description:
-      'Retrieve all passengers with pagination and filters (Admin/Staff only)',
-  })
+  @Query(() => PaginatedPassenger, { name: 'passengers' })
   findAll(
     @Args('pagination', { nullable: true })
     pagination: PaginationInput = { page: 1, limit: 10 },
@@ -47,8 +43,6 @@ export class PassengerResolver {
   @Roles(Role.ADMIN)
   @Query(() => Passenger, {
     name: 'passenger',
-    description:
-      'Retrieve a single passenger by ID (Admin/Passenger self-lookup)',
   })
   findOne(@Args('id', { type: () => ID }) id: string): Promise<Passenger> {
     return this.passengerService.findOne(id);
@@ -56,9 +50,7 @@ export class PassengerResolver {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Mutation(() => Passenger, {
-    description: 'Update a passenger record (Admin/Passenger self-update)',
-  })
+  @Mutation(() => Passenger)
   updatePassenger(
     @Args('input') input: UpdatePassengerInput,
   ): Promise<Passenger> {
@@ -67,10 +59,7 @@ export class PassengerResolver {
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Mutation(() => Passenger, {
-    description:
-      'Delete a passenger and their associated user account (Admin/Passenger self-delete)',
-  })
+  @Mutation(() => Passenger)
   deletePassenger(
     @Args('id', { type: () => ID }) id: string,
   ): Promise<Passenger> {
@@ -89,12 +78,11 @@ export class PassengerResolver {
   @ResolveField(() => [Booking], { nullable: true })
   bookings(
     @Parent() passenger: Passenger,
-   
+
     @Loader('bookingsByPassengerId')
     bookingsLoader: DataLoader<string, Booking[]>,
   ): Promise<Booking[]> {
     if (!passenger.id) return Promise.resolve([]);
     return bookingsLoader.load(passenger.id);
   }
- 
 }

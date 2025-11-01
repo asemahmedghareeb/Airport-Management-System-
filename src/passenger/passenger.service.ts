@@ -20,7 +20,7 @@ export class PassengerService {
     private passengerRepository: Repository<Passenger>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {} // --- READ: Retrieve Single Passenger (Optimized) ---
+  ) {}
 
   async findOne(id: string): Promise<Passenger> {
     const passenger = await this.passengerRepository.findOne({
@@ -30,7 +30,7 @@ export class PassengerService {
       throw new NotFoundException(`Passenger with ID "${id}" not found.`);
     }
     return passenger;
-  } // --- READ: Retrieve Passengers with Pagination and Filtering (Optimized) ---
+  } 
 
   async findAll(
     pagination: PaginationInput,
@@ -68,11 +68,11 @@ export class PassengerService {
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
     };
-  } // --- UPDATE: Modify Passenger Details (Unchanged) ---
+  } 
 
   async update(input: UpdatePassengerInput): Promise<Passenger> {
     const { id, ...updateFields } = input;
-    const passenger = await this.findOne(id); // Check for passport number uniqueness (unchanged)
+    const passenger = await this.findOne(id); 
 
     if (
       updateFields.passportNumber &&
@@ -88,7 +88,7 @@ export class PassengerService {
 
     Object.assign(passenger, updateFields);
     return this.passengerRepository.save(passenger);
-  } // --- DELETE: Remove Passenger Member (Unchanged) ---
+  } 
 
   async delete(id: string): Promise<Passenger> {
     const passenger = await this.findOne(id);
@@ -104,13 +104,8 @@ export class PassengerService {
     await this.passengerRepository.remove(passenger);
 
     return passenger;
-  } // 💡 NEW HELPER for Field Resolvers (Fixed to return null instead of throwing)
-  // async findUserByPassengerId(passengerId: string): Promise<User | null> {
-  //   // Return null if not found. Let the resolver handle the null value.
-  //   return this.userRepository.findOne({
-  //     where: { passenger: { id: passengerId } },
-  //   });
-  // }
+  }
+
 
   async findByIds(ids: string[]): Promise<Passenger[]> {
     return await this.passengerRepository.find({ where: { id: In(ids) } });

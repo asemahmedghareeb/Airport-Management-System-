@@ -28,7 +28,6 @@ export class BookingService {
   async bookFlight(input: BookFlightInput): Promise<Booking> {
     const { passengerId, flightId, seatNumber } = input;
 
-    // 1. Initialize QueryRunner and start transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -50,7 +49,6 @@ export class BookingService {
         throw new NotFoundException(`Flight with ID "${flightId}" not found.`);
       }
 
-      // 3. Check for Duplicate Passenger (Passenger already booked on this flight)
       const passengerAlreadyBooked = await manager.findOne(Booking, {
         where: { passenger: { id: passengerId }, flight: { id: flightId } },
       });
@@ -60,7 +58,6 @@ export class BookingService {
         );
       }
 
-      // 4. Check for Duplicate Seat assignment
       const duplicateSeat = await manager.findOne(Booking, {
         where: { flight: { id: flightId }, seatNumber },
       });
@@ -70,7 +67,6 @@ export class BookingService {
         );
       }
 
-      // 5. Check if the flight is fully booked
       const bookedCount = await manager.count(Booking, {
         where: { flight: { id: flightId } },
       });
@@ -78,7 +74,6 @@ export class BookingService {
         throw new BadRequestException('This flight is fully booked.');
       }
 
-      // 6. Create and save the booking
       const newBooking = manager.create(Booking, {
         passenger,
         flight,
@@ -88,20 +83,16 @@ export class BookingService {
       });
       await manager.save(newBooking);
 
-      // 7. Decrement available seats count on the Flight entity
       if (flight.availableSeats > 0) {
         flight.availableSeats -= 1;
         await manager.save(flight);
       }
 
-      // 8. Commit Transaction (All changes are saved to the database)
       await queryRunner.commitTransaction();
       return newBooking;
     } catch (err) {
-      // 9. Rollback Transaction on error (No changes are saved)
       await queryRunner.rollbackTransaction();
 
-      // Re-throw the error for the resolver to handle
       if (
         err instanceof NotFoundException ||
         err instanceof BadRequestException
@@ -109,9 +100,7 @@ export class BookingService {
         throw err;
       }
 
-      // Handle unexpected DB errors (e.g., race conditions caught by unique constraint)
       if (err.code === '23505') {
-        // PostgreSQL unique violation code
         throw new BadRequestException(
           'A booking conflict occurred. The seat or passenger-flight combination is already taken.',
         );
@@ -125,7 +114,6 @@ export class BookingService {
     }
   }
 
-  // --- CRUD: Find One ---
   async findOne(id: string): Promise<Booking> {
     const booking = await this.bookingRepository.findOne({
       where: { id },
@@ -136,7 +124,6 @@ export class BookingService {
     return booking;
   }
 
-  // --- CRUD: Find All (with Pagination) ---
   async findAll(pagination: PaginationInput): Promise<PaginatedBooking> {
     const { page, limit } = pagination;
     const skip = (page - 1) * limit;
@@ -152,12 +139,11 @@ export class BookingService {
       totalPages: Math.ceil(totalItems / limit),
     };
   }
-  // --- CRUD: Update Booking (Change Seat Number) ---
+
   async updateBooking(input: UpdateBookingInput): Promise<Booking> {
     const booking = await this.findOne(input.id);
 
     if (input.seatNumber && input.seatNumber !== booking.seatNumber) {
-      // Must re-validate new seat for duplication on the same flight
       const duplicateSeat = await this.bookingRepository.findOne({
         where: {
           flight: booking.flight,
@@ -175,9 +161,6 @@ export class BookingService {
     return this.bookingRepository.save(booking);
   }
 
-  // --- CRUD: Delete Booking ---
-  // src/booking/booking.service.ts
-
   async deleteBooking(id: string): Promise<Booking> {
     const booking = await this.findOne(id);
 
@@ -190,7 +173,6 @@ export class BookingService {
     return deletedBookingData as Booking;
   }
 
-  // --- Query: Allow passengers to check flight details (Requirement 2) ---
   async findBookingsByPassenger(passengerId: string): Promise<Booking[]> {
     const bookings = await this.bookingRepository.find({
       where: { passenger: { id: passengerId } },
@@ -198,10 +180,6 @@ export class BookingService {
     });
     return bookings;
   }
-
-  // async findByFlight(id: string): Promise<Booking[]> {
-  //   return this.bookingRepository.find({ where: { flight: { id } } });
-  // }
 
   findByFlightIds(flightIds: string[]): Promise<Booking[]> {
     return this.bookingRepository.find({

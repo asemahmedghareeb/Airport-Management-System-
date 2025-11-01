@@ -32,14 +32,12 @@ export class Staff {
   role: string;
 
   @Column({ type: 'uuid' })
-  @Column({ type: 'uuid' })
   airportId: string;
 
   @Column({ type: 'uuid' })
   userId: string;
 
   @Field(() => User)
-  // @OneToOne(() => User, (user) => user.staff, { onDelete: 'CASCADE' })
   @OneToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;

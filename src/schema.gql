@@ -140,37 +140,14 @@ type Query {
   airport(id: ID!): Airport!
   flights(pagination: PaginationInput, filter: FlightFilterInput): PaginatedFlightResponse!
   flight(id: ID!): Flight!
-
-  """Retrieve all staff with pagination and filters (Admin/Staff only)"""
   staffMembers(pagination: PaginationInput, filter: StaffFilterInput): PaginatedStaff!
-
-  """Retrieve a single staff member by ID"""
   staffMember(id: ID!): Staff!
-
-  """Find all staff assigned to a specific airport (Admin/Staff only)"""
   staffByAirport(airportId: ID!): [Staff!]!
-
-  """Find all staff assigned to a specific flight (Admin/Staff only)"""
   staffByFlight(flightId: ID!): [Staff!]!
-
-  """Retrieve a single booking by ID (Admin/Passenger self-lookup)"""
   booking(id: ID!): Booking!
-
-  """Retrieve all bookings with pagination (Admin only)"""
   bookings(pagination: PaginationInput): PaginatedBooking!
-
-  """
-  Retrieve all bookings and flight details for a passenger (Passenger self-lookup)
-  """
-  myBookings(
-    """The ID of the passenger."""
-    passengerId: ID!
-  ): [Booking!]!
-
-  """Retrieve all passengers with pagination and filters (Admin/Staff only)"""
+  myBookings(passengerId: ID!): [Booking!]!
   passengers(pagination: PaginationInput, filter: PassengerFilterInput): PaginatedPassenger!
-
-  """Retrieve a single passenger by ID (Admin/Passenger self-lookup)"""
   passenger(id: ID!): Passenger!
 }
 
@@ -208,33 +185,15 @@ type Mutation {
   createFlight(input: CreateFlightInput!): Flight!
   updateFlight(input: UpdateFlightInput!): Flight!
   removeFlight(id: ID): Boolean!
-
-  """Update a staff member (Admin only)"""
   updateStaff(input: UpdateStaffInput!): Staff!
-
-  """Delete a staff member and their associated user account (Admin only)"""
   deleteStaff(id: ID!): Staff!
-
-  """Assign a staff member to a flight (Admin/Staff only)"""
   assignStaffToFlight(input: AssignStaffToFlightInput!): FlightStaff!
 
   """Creates a new booking, checks for seat duplication (Passenger only)"""
   bookFlight(input: BookFlightInput!): Booking!
-
-  """
-  Update a booking (e.g., change seat number) (Admin/Passenger self-update)
-  """
   updateBooking(input: UpdateBookingInput!): Booking!
-
-  """Cancel a booking (Admin/Passenger self-delete)"""
   deleteBooking(id: ID!): Booking!
-
-  """Update a passenger record (Admin/Passenger self-update)"""
   updatePassenger(input: UpdatePassengerInput!): Passenger!
-
-  """
-  Delete a passenger and their associated user account (Admin/Passenger self-delete)
-  """
   deletePassenger(id: ID!): Passenger!
   registerPushDevice(input: RegisterPushDeviceInput!): PushDevice!
   sendNotification(input: SendNotificationInput!): NotificationResponse!

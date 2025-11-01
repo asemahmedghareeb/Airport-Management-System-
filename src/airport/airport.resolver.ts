@@ -6,7 +6,6 @@ import {
   ID,
   ResolveField,
   Parent,
-  Context,
 } from '@nestjs/graphql';
 import { AirportService } from './airport.service';
 import { Airport } from './entities/airport.entity';

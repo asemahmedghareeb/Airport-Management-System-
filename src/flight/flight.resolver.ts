@@ -18,12 +18,11 @@ import { Airport } from 'src/airport/entities/airport.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
 import DataLoader from 'dataloader';
 import { Loader } from 'src/dataloader/decorators/loader.decorator';
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { FlightOwnershipGuard } from './guards/flightOwnerShip.guard';
 
@@ -80,9 +79,7 @@ export class FlightResolver {
     return this.flightService.findOne(id);
   }
 
-  // ==============
-  // 🧩 RESOLVE FIELDS
-  // ==============
+  
 
   @ResolveField(() => Airport)
   departureAirport(
