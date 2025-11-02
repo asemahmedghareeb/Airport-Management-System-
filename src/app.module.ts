@@ -5,7 +5,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AirportModule } from './airport/airport.module';
 import { FlightModule } from './flight/flight.module';
 import { StaffModule } from './staff/staff.module';
@@ -19,13 +18,11 @@ import { Passenger } from './passenger/entities/passenger.entity';
 import { Booking } from './booking/entities/booking.entity';
 import { FlightStaff } from './flight/entities/flight_staff';
 import { User } from './auth/entities/user.entity';
-import { DataLoaderService } from './dataloader/dataloader.service';
-import { AirportLoader } from './airport/airport.loader';
-import { DataLoaderInterceptor } from './dataloader/dataloader.interceptor';
 import { PushNotificationsModule } from './push-notifications/push-notifications.module';
 import { PushDevice } from './push-notifications/entities/PushDevice.entity';
 import { EmailsModule } from './emails/emails.module';
 import { BullModule } from '@nestjs/bull';
+import { DataloadersModule } from './dataloaders/dataloaders.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -87,15 +84,8 @@ import { BullModule } from '@nestjs/bull';
     BookingModule,
     PushNotificationsModule,
     EmailsModule,
+    DataloadersModule,
   ],
 
-  providers: [
-    DataLoaderService,
-    AirportLoader,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: DataLoaderInterceptor,
-    },
-  ],
 })
 export class AppModule {}

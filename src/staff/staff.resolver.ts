@@ -17,18 +17,24 @@ import { UpdateStaffInput } from './dto/UpdateStaffInput.dto';
 import { AssignStaffToFlightInput } from './dto/assignStaffToFlightInput';
 import { User } from 'src/auth/entities/user.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
-import DataLoader from 'dataloader';
-import { Loader } from 'src/dataloader/decorators/loader.decorator';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
+import { AirportLoader } from 'src/dataloaders/airport.loader';
+import { StaffLoader } from 'src/dataloaders/staff.loader';
+import { UserLoader } from 'src/dataloaders/user.loader';
 
 @UseGuards(AuthGuard)
 @Resolver(() => Staff)
 export class StaffResolver {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(
+    private readonly staffService: StaffService,
+    private readonly airportLoader: AirportLoader,
+    private readonly staffLoader: StaffLoader,
+    private readonly userLoader: UserLoader,
+  ) {}
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
@@ -98,29 +104,19 @@ export class StaffResolver {
   }
 
   @ResolveField(() => User)
-  user(
-    @Parent() staff: Staff,
-    @Loader('userById') userLoader: DataLoader<string, User>,
-  ): Promise<User> | null {
+  user(@Parent() staff: Staff): Promise<User> | null {
     if (!staff.userId) return null;
-    return userLoader.load(staff.userId);
+    return this.userLoader.userById.load(staff.userId);
   }
 
   @ResolveField(() => Airport)
-  airport(
-    @Parent() staff: Staff,
-    @Loader('airportById') airportLoader: DataLoader<string, Airport>,
-  ): Promise<Airport> | null {
+  airport(@Parent() staff: Staff): Promise<Airport> | null {
     if (!staff.airportId) return null;
-    return airportLoader.load(staff.airportId);
+    return this.airportLoader.airportById.load(staff.airportId);
   }
 
   @ResolveField(() => [FlightStaff], { nullable: true })
-  flightAssignments(
-    @Parent() staff: Staff,
-    @Loader('flightAssignmentsByStaffId')
-    flightAssignmentsLoader: DataLoader<string, FlightStaff[]>,
-  ): Promise<FlightStaff[]> {
-    return flightAssignmentsLoader.load(staff.id);
+  flightAssignments(@Parent() staff: Staff): Promise<FlightStaff[]> {
+    return this.staffLoader.flightAssignmentsByStaffId.load(staff.id);
   }
 }

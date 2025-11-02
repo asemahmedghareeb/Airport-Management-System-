@@ -16,8 +16,6 @@ import { PaginatedFlightResponse } from './dto/paginated-flight.response';
 import { FlightFilterInput } from './dto/flight-filter.input';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
-import DataLoader from 'dataloader';
-import { Loader } from 'src/dataloader/decorators/loader.decorator';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -25,12 +23,19 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { FlightOwnershipGuard } from './guards/flightOwnerShip.guard';
-
+import { AirportLoader } from 'src/dataloaders/airport.loader';
+import { BookingLoader } from 'src/dataloaders/booking.loader';
+import { StaffLoader } from 'src/dataloaders/staff.loader';
 
 @UseGuards(AuthGuard)
 @Resolver(() => Flight)
 export class FlightResolver {
-  constructor(private readonly flightService: FlightService) {}
+  constructor(
+    private readonly flightService: FlightService,
+    private readonly airportLoader:   AirportLoader,
+    private readonly bookingLoader: BookingLoader,
+    private readonly staffLoader: StaffLoader,
+  ) {}
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
@@ -72,39 +77,33 @@ export class FlightResolver {
     return this.flightService.findOne(id);
   }
 
-  
-
   @ResolveField(() => Airport)
   departureAirport(
     @Parent() flight: Flight,
-    @Loader('airportById') airportLoader: DataLoader<string, Airport>,
   ): Promise<Airport> | null {
     if (!flight.departureAirportId) return null;
-    return airportLoader.load(flight.departureAirportId);
+    return this.airportLoader.airportById.load(flight.departureAirportId);
   }
 
   @ResolveField(() => Airport)
   destinationAirport(
     @Parent() flight: Flight,
-    @Loader('airportById') airportLoader: DataLoader<string, Airport>,
   ): Promise<Airport> | null {
     if (!flight.destinationAirportId) return null;
-    return airportLoader.load(flight.destinationAirportId);
+    return this.airportLoader.airportById.load(flight.destinationAirportId);
   }
 
   @ResolveField(() => [Booking], { nullable: true })
   bookings(
     @Parent() flight: Flight,
-    @Loader('bookingsByFlightId') bookingsLoader: DataLoader<string, Booking[]>,
   ): Promise<Booking[]> {
-    return bookingsLoader.load(flight.id);
+    return this.bookingLoader.bookingsByFlightId.load(flight.id);
   }
 
   @ResolveField(() => [Staff], { nullable: true })
   staffAssignments(
     @Parent() flight: Flight,
-    @Loader('staffByFlightId') staffLoader: DataLoader<string, Staff[]>,
   ): Promise<Staff[]> {
-    return staffLoader.load(flight.id);
+    return this.staffLoader.staffByFlightId.load(flight.id);
   }
 }

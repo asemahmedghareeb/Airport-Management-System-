@@ -157,8 +157,8 @@ export class AuthService {
         userId: user.id,
         role: user.role,
         staffId: staff?.id,
-        airportId: staff?.airportId,
-        flights: flightStaff?.map((flightStaff) => flightStaff.flightId),
+        airportId: staff?.airportId,//todo remove this line
+        flights: flightStaff?.map((flightStaff) => flightStaff.flightId), //todo remove this line
       };
       const accessToken = this.jwtService.sign(payload);
       return { accessToken };

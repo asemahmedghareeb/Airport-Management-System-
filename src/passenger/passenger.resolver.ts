@@ -15,18 +15,22 @@ import { UpdatePassengerInput } from './dto/passengerUpdateInput.dto';
 import { PassengerFilterInput } from './dto/passengerFilterInput.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Booking } from 'src/booking/entities/booking.entity';
-import { Loader } from 'src/dataloader/decorators/loader.decorator';
-import DataLoader from 'dataloader';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
+import { UserLoader } from 'src/dataloaders/user.loader';
+import { BookingLoader } from 'src/dataloaders/booking.loader';
 
 @UseGuards(AuthGuard)
 @Resolver(() => Passenger)
 export class PassengerResolver {
-  constructor(private readonly passengerService: PassengerService) {}
+  constructor(
+    private readonly passengerService: PassengerService,
+    private readonly userLoader: UserLoader,
+    private readonly bookingLoader: BookingLoader,
+  ) {}
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
@@ -67,22 +71,14 @@ export class PassengerResolver {
   }
 
   @ResolveField(() => User, { nullable: true })
-  user(
-    @Parent() passenger: Passenger,
-    @Loader('userById') userLoader: DataLoader<string, User>,
-  ): Promise<User> | null {
+  user(@Parent() passenger: Passenger): Promise<User> | null {
     if (!passenger.userId) return null;
-    return userLoader.load(passenger.userId);
+    return this.userLoader.userById.load(passenger.userId);
   }
 
   @ResolveField(() => [Booking], { nullable: true })
-  bookings(
-    @Parent() passenger: Passenger,
-
-    @Loader('bookingsByPassengerId')
-    bookingsLoader: DataLoader<string, Booking[]>,
-  ): Promise<Booking[]> {
+  bookings(@Parent() passenger: Passenger): Promise<Booking[]> {
     if (!passenger.id) return Promise.resolve([]);
-    return bookingsLoader.load(passenger.id);
+    return this.bookingLoader.bookingsByPassengerId.load(passenger.id);
   }
 }

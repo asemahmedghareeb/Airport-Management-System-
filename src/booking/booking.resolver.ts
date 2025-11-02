@@ -14,19 +14,23 @@ import { BookFlightInput, UpdateBookingInput } from './dto/BookFlightInput.dto';
 import { PaginatedBooking } from './dto/paginatedBooking.dto';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
-import { Loader } from 'src/dataloader/decorators/loader.decorator';
-import DataLoader from 'dataloader';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
+import { FlightLoader } from 'src/dataloaders/flight.loader';
+import { PassengerLoader } from 'src/dataloaders/passenger.loader';
 
 @UseGuards(AuthGuard)
 @Resolver(() => Booking)
 export class BookingResolver {
-  constructor(private readonly bookingService: BookingService) {}
+  constructor(
+    private readonly bookingService: BookingService,
+    private readonly flightLoader: FlightLoader,
+    private readonly passengerLoader: PassengerLoader,
+  ) {}
 
   @Roles(Role.ADMIN, Role.PASSENGER)
   @UseGuards(RolesGuard)
@@ -93,18 +97,12 @@ export class BookingResolver {
   }
 
   @ResolveField(() => Flight)
-  async flight(
-    @Parent() booking: Booking,
-    @Loader('flightById') flightLoader: DataLoader<string, Flight>,
-  ): Promise<Flight> {
-    return flightLoader.load(booking.flightId);
+  async flight(@Parent() booking: Booking): Promise<Flight> {
+    return this.flightLoader.flightById.load(booking.flightId);
   }
 
   @ResolveField(() => Passenger)
-  async passenger(
-    @Parent() booking: Booking,
-    @Loader('passengerById') passengerLoader: DataLoader<string, Passenger>,
-  ): Promise<Passenger> {
-    return passengerLoader.load(booking.passengerId);
+  async passenger(@Parent() booking: Booking): Promise<Passenger> {
+    return this.passengerLoader.passengerById.load(booking.passengerId);
   }
 }

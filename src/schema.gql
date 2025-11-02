@@ -102,12 +102,6 @@ type PaginatedStaff {
   totalPages: Int!
 }
 
-type PaginatedBooking {
-  items: [Booking!]!
-  totalItems: Int!
-  totalPages: Int!
-}
-
 type PaginatedPassenger {
   items: [Passenger!]!
   totalItems: Int!
@@ -128,6 +122,12 @@ type Me {
   role: String!
 }
 
+type PaginatedBooking {
+  items: [Booking!]!
+  totalItems: Int!
+  totalPages: Int!
+}
+
 type NotificationResponse {
   id: String!
   recipients: Float!
@@ -144,11 +144,11 @@ type Query {
   staffMember(id: ID!): Staff!
   staffByAirport(airportId: ID!): [Staff!]!
   staffByFlight(flightId: ID!): [Staff!]!
+  passengers(pagination: PaginationInput, filter: PassengerFilterInput): PaginatedPassenger!
+  passenger(id: ID!): Passenger!
   booking(id: ID!): Booking!
   bookings(pagination: PaginationInput): PaginatedBooking!
   myBookings(passengerId: ID!): [Booking!]!
-  passengers(pagination: PaginationInput, filter: PassengerFilterInput): PaginatedPassenger!
-  passenger(id: ID!): Passenger!
 }
 
 input PaginationInput {
@@ -188,13 +188,13 @@ type Mutation {
   updateStaff(input: UpdateStaffInput!): Staff!
   deleteStaff(id: ID!): Staff!
   assignStaffToFlight(input: AssignStaffToFlightInput!): FlightStaff!
+  updatePassenger(input: UpdatePassengerInput!): Passenger!
+  deletePassenger(id: ID!): Passenger!
 
   """Creates a new booking, checks for seat duplication (Passenger only)"""
   bookFlight(input: BookFlightInput!): Booking!
   updateBooking(input: UpdateBookingInput!): Booking!
   deleteBooking(id: ID!): Booking!
-  updatePassenger(input: UpdatePassengerInput!): Passenger!
-  deletePassenger(id: ID!): Passenger!
   registerPushDevice(input: RegisterPushDeviceInput!): PushDevice!
   sendNotification(input: SendNotificationInput!): NotificationResponse!
 }
@@ -277,6 +277,13 @@ input AssignStaffToFlightInput {
   assignedRoleOnFlight: String!
 }
 
+input UpdatePassengerInput {
+  id: ID!
+  name: String
+  nationality: String
+  passportNumber: String
+}
+
 input BookFlightInput {
   passengerId: ID
   flightId: ID!
@@ -286,13 +293,6 @@ input BookFlightInput {
 input UpdateBookingInput {
   id: ID!
   seatNumber: String
-}
-
-input UpdatePassengerInput {
-  id: ID!
-  name: String
-  nationality: String
-  passportNumber: String
 }
 
 input RegisterPushDeviceInput {

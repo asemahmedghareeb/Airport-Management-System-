@@ -4,20 +4,19 @@ import { StaffResolver } from './staff.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Staff } from './entities/staff.entity';
 import { FlightStaff } from 'src/flight/entities/flight_staff';
-import { FlightModule } from 'src/flight/flight.module';
-import { AirportModule } from 'src/airport/airport.module';
+// import { FlightModule } from 'src/flight/flight.module';
+// import { AirportModule } from 'src/airport/airport.module';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { User } from 'src/auth/entities/user.entity';
-import { StaffLoader } from './staff.loader';
 
 @Module({
   imports: [
-    forwardRef(() => FlightModule),
-    forwardRef(() => AirportModule),
+    // forwardRef(() => FlightModule),
+    // forwardRef(() => AirportModule),
     TypeOrmModule.forFeature([Staff, FlightStaff, Flight, Airport, User]),
   ],
-  exports: [StaffService, StaffLoader],
-  providers: [StaffResolver, StaffService, StaffLoader],
+  exports: [StaffService],
+  providers: [StaffResolver, StaffService],
 })
 export class StaffModule {}

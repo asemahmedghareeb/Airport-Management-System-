@@ -19,24 +19,28 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { PaginationInput } from '../common/pagination.input';
 import { PaginatedAirportResponse } from './dto/paginated-airport.response';
-import { Loader } from 'src/dataloader/decorators/loader.decorator';
-import DataLoader from 'dataloader';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { StaffLoader } from 'src/dataloaders/staff.loader';
+import { FlightLoader } from 'src/dataloaders/flight.loader';
 
 @UseGuards(AuthGuard)
 @Resolver(() => Airport)
 export class AirportResolver {
   constructor(
     private readonly airportService: AirportService,
+    private readonly staffLoader: StaffLoader,
+    private readonly flightLoader: FlightLoader,
   ) {}
 
-  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Airport)
   createAirport(@Args('input') input: CreateAirportInput) {
     return this.airportService.create(input);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => PaginatedAirportResponse)
   async airports(
     @Args('pagination', { type: () => PaginationInput, nullable: true })
@@ -45,55 +49,45 @@ export class AirportResolver {
     return this.airportService.findAll(pagination);
   }
 
-
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Query(() => Airport)
   airport(@Args('id', { type: () => ID }) id: string) {
     return this.airportService.findOne(id);
   }
 
-  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Airport)
   updateAirport(@Args('input') input: UpdateAirportInput) {
     return this.airportService.update(input.id, input);
   }
 
-  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean)
   removeAirport(@Args('id', { type: () => ID }) id: string) {
     return this.airportService.remove(id);
   }
 
-  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @ResolveField('departingFlights', () => [Flight], { nullable: true })
-  async getDepartingFlights(
-    @Parent() airport: Airport,
-    @Loader('flightsByDepartureAirportId')
-    flightsLoader: DataLoader<string, Flight>,
-  ) {
-    return flightsLoader.load(airport.id);
+  async getDepartingFlights(@Parent() airport: Airport) {
+    return this.flightLoader.flightsByDepartureAirportId.load(airport.id);
   }
 
-  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @ResolveField('arrivingFlights', () => [Flight], { nullable: true })
-  async getArrivingFlights(
-    @Parent() airport: Airport,
-    @Loader('flightsByArrivalAirportId')
-    flightsLoader: DataLoader<string, Flight>,
-  ) {
-    return flightsLoader.load(airport.id);
+  async getArrivingFlights(@Parent() airport: Airport) {
+    return this.flightLoader.flightsByArrivalAirportId.load(airport.id);
   }
 
-  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @ResolveField('staff', () => [Staff], { nullable: true })
-  async getStaff(
-    @Parent() airport: Airport,
-    @Loader('staffByAirportId') staffLoader: DataLoader<string, Staff>,
-  ) {
-    return staffLoader.load(airport.id);
+  async getStaff(@Parent() airport: Airport) {
+    return this.staffLoader.staffByAirportId.load(airport.id);
   }
 }

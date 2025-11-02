@@ -22,13 +22,11 @@ export class RolesGuard implements CanActivate {
     const ctx = GqlExecutionContext.create(context);
     const req = ctx.getContext().req;
     const user = req?.user;
-
     if (!user) {
       throw new ForbiddenException(
         'No user found in request - authenticate first',
       );
     }
-    console.log(user.role);
     const userRoles: string[] = user.role || [];
     const has = requiredRoles.some((role) => userRoles.includes(role));
     if (!has)

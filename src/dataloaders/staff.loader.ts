@@ -1,20 +1,20 @@
 
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
-import { Staff } from './entities/staff.entity';
-import { StaffService } from './staff.service';
+import { Staff } from '../staff/entities/staff.entity';
+import { StaffService } from '../staff/staff.service';
 import { mapArrayToIds } from 'src/common/utils';
 import { FlightStaff } from 'src/flight/entities/flight_staff';
-
+import { Scope } from '@nestjs/common';
 type StaffWithFlightId = Staff & { flightId: string };
 type FlightStaffWithStaffId = FlightStaff & { staffId: string };
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class StaffLoader {
   constructor(private readonly staffService: StaffService) {}
 
-  createLoaders() {
-    const staffByAirportId = new DataLoader<string, Staff[]>(
+
+    readonly staffByAirportId: DataLoader<string, Staff[]> = new DataLoader<string, Staff[]>(
       async (airportIds: string[]) => {
         const staffMembers =
           await this.staffService.findByAirportIds(airportIds);
@@ -33,7 +33,7 @@ export class StaffLoader {
       },
     );
 
-    const staffByFlightId = new DataLoader<string, Staff[]>(
+    readonly staffByFlightId: DataLoader<string, Staff[]> = new DataLoader<string, Staff[]>(
       async (flightIds: string[]) => {
         const rawStaffResults =
           await this.staffService.findByFlightIds(flightIds);
@@ -46,7 +46,7 @@ export class StaffLoader {
       },
     );
 
-    const flightAssignmentsByStaffId = new DataLoader<string, FlightStaff[]>(
+    readonly flightAssignmentsByStaffId: DataLoader<string, FlightStaff[]> = new DataLoader<string, FlightStaff[]>(
       async (staffIds: string[]) => {
         const rawAssignments =
           await this.staffService.flightAssignmentsByStaffIds(staffIds);
@@ -59,6 +59,6 @@ export class StaffLoader {
       },
     );
 
-    return { staffByAirportId, staffByFlightId, flightAssignmentsByStaffId };
-  }
+   
+  
 }

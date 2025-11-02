@@ -5,17 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
 import { Flight } from 'src/flight/entities/flight.entity';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
-import { FlightModule } from 'src/flight/flight.module';
-import { PassengerModule } from 'src/passenger/passenger.module';
-import { BookingLoader } from './booking.loader';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Booking, Flight, Passenger]),
-    forwardRef(() => FlightModule),
-    forwardRef(() => PassengerModule),
-  ],
-  providers: [BookingService, BookingResolver, BookingLoader],
-  exports: [BookingService, BookingLoader], 
+  imports: [TypeOrmModule.forFeature([Booking, Flight, Passenger])],
+  providers: [BookingService, BookingResolver],
+  exports: [BookingService],
 })
 export class BookingModule {}

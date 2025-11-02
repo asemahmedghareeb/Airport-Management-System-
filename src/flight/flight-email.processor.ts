@@ -1,4 +1,3 @@
-// src/flight/flight-email.processor.ts
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bullmq';
 import { EmailsService } from 'src/emails/emails.service';
