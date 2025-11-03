@@ -1,6 +1,5 @@
-// src/user/entities/user.entity.ts
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'; // 👈 ADD OneToMany
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'; 
 import { PushDevice } from 'src/push-notifications/entities/PushDevice.entity';
 
 @ObjectType()
@@ -8,7 +7,7 @@ import { PushDevice } from 'src/push-notifications/entities/PushDevice.entity';
 export class User {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string; 
 
   @Field()
   @Column({ unique: true })
@@ -18,7 +17,7 @@ export class User {
   password: string;
 
   @Field(() => String)
-  @Column({
+  @Column({ 
     type: 'enum',
     enum: ['Admin', 'Staff', 'Passenger'],
   })
@@ -27,4 +26,15 @@ export class User {
   @Field(() => [PushDevice], { nullable: 'itemsAndList' })
   @OneToMany(() => PushDevice, (pushDevice) => pushDevice.user)
   pushDevices: PushDevice[];
+
+
+   @Field(() => Boolean)
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  otp: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  otpExpires: Date | null;
 }

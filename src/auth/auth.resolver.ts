@@ -14,6 +14,8 @@ import { Roles } from './decorators/roles.decorator';
 import { ObjectType } from '@nestjs/graphql';
 import { RegisterResponse } from './dto/registerResponse.dto';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { VerifyOtpInput } from './dto/verifyOtpInput';
+import { ResendOtpInput } from './dto/resendOtpInput';
 
 @ObjectType()
 class Me {
@@ -59,6 +61,21 @@ export class AuthResolver {
     @CurrentUser() user: IUser,
   ): Promise<AuthResponse> {
     return this.authService.refreshToken(user.userId);
+  }
+
+  @Mutation(() => AuthResponse, { name: 'verifyOtp' })
+  async verifyOtp(
+    @Args('input') input: VerifyOtpInput,
+  ): Promise<AuthResponse> {
+    return this.authService.verifyOtp(input);
+  }
+
+  // 👇 --- NEW MUTATION ---
+  @Mutation(() => RegisterResponse, { name: 'resendOtp' })
+  async resendOtp(
+    @Args('input') input: ResendOtpInput,
+  ): Promise<RegisterResponse> {
+    return this.authService.resendOtp(input);
   }
 
   @UseGuards(AuthGuard)

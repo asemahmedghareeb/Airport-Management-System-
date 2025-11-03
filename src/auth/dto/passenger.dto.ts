@@ -1,6 +1,5 @@
 import { InputType, Field, ObjectType } from '@nestjs/graphql';
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
-import { User } from '../entities/user.entity';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 @InputType()
 export class RegisterPassengerInput {
@@ -21,7 +20,9 @@ export class RegisterPassengerInput {
   @IsNotEmpty()
   passportNumber: string;
 
-  @Field({ nullable: true })
-  nationality?: string;
+  // If nationality is REQUIRED:
+  @Field() // Remove nullable: true
+  @IsString()
+  @IsNotEmpty()
+  nationality: string; // Remove the '?'
 }
-

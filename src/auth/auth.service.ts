@@ -18,7 +18,10 @@ import { RegisterPassengerInput } from './dto/passenger.dto';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { RegisterStaffInput } from './dto/staff.dto';
-
+import { RegisterResponse } from './dto/registerResponse.dto';
+import { VerifyOtpInput } from './dto/verifyOtpInput';
+import { EmailsService } from 'src/emails/emails.service';
+import { ResendOtpInput } from './dto/resendOtpInput';
 @Injectable()
 export class AuthService {
   constructor(
@@ -31,11 +34,12 @@ export class AuthService {
     @InjectRepository(Airport)
     private airportsRepository: Repository<Airport>,
     private jwtService: JwtService,
+    private emailService: EmailsService,
   ) {}
 
   async registerPassenger(
     input: RegisterPassengerInput,
-  ): Promise<{ msg: string }> {
+  ): Promise<RegisterResponse> {
     const existingUser = await this.usersRepository.findOne({
       where: { email: input.email },
     });
@@ -44,11 +48,15 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 10);
+    const { otp, expires } = this.generateOtp(); 
 
     const newUser = this.usersRepository.create({
       email: input.email,
       password: hashedPassword,
       role: 'Passenger',
+      isVerified: false,
+      otp: otp,
+      otpExpires: expires,
     });
     const savedUser = await this.usersRepository.save(newUser);
 
@@ -60,12 +68,15 @@ export class AuthService {
     });
     await this.passengersRepository.save(newPassenger);
 
+    await this.emailService.sendEmail(savedUser.email, 'Verify OTP', otp);
+    console.log(`OTP for ${savedUser.email}: ${otp}`); 
+
     return {
-      msg: 'Passenger registered successfully',
+      msg: 'Passenger registered. Please check your email for an OTP.',
     };
   }
 
-  async registerStaff(input: RegisterStaffInput): Promise<{ msg: string }> {
+  async registerStaff(input: RegisterStaffInput): Promise<RegisterResponse> {
     const airport = await this.airportsRepository.findOne({
       where: { id: input.airportId },
     });
@@ -78,20 +89,22 @@ export class AuthService {
     const existingUser = await this.usersRepository.findOne({
       where: { email: input.email },
     });
-
     if (existingUser) {
-      throw new ConflictException('A user with this email already exists.');
+      throw new BadRequestException('User with this email already exists.');
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 10);
+    const { otp, expires } = this.generateOtp();
 
     const newUser = this.usersRepository.create({
       email: input.email,
       password: hashedPassword,
       role: input.userRole,
+      isVerified: false,
+      otp: otp,
+      otpExpires: expires,
     });
     const savedUser = await this.usersRepository.save(newUser);
-
     const newStaff = this.staffRepository.create({
       user: savedUser,
       airport: airport,
@@ -100,16 +113,63 @@ export class AuthService {
       role: input.staffRole,
       userId: savedUser.id,
     });
-
     await this.staffRepository.save(newStaff);
 
-    return { msg: 'Staff registered successfully' };
+    await this.emailService.sendEmail(savedUser.email, 'Verify OTP', otp);
+    console.log(`OTP for ${savedUser.email}: ${otp}`);
+
+    return { msg: 'Staff registered. Please check your email for an OTP.' };
+  }
+
+  async verifyOtp({ email, otp }: VerifyOtpInput): Promise<AuthResponse> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new BadRequestException('Invalid email or OTP.');
+    }
+    if (user.isVerified) {
+      throw new BadRequestException('Account already verified.');
+    }
+    if (user.otp !== otp) {
+      throw new BadRequestException('Invalid email or OTP.');
+    }
+    if (new Date() > user.otpExpires!) {
+      throw new BadRequestException('OTP has expired.');
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpires = null;
+    await this.usersRepository.save(user);
+
+    return this.generateTokens(user);
+  }
+
+  async resendOtp({ email }: ResendOtpInput): Promise<RegisterResponse> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    if (user.isVerified) {
+      throw new BadRequestException('Account already verified.');
+    }
+
+    const { otp, expires } = this.generateOtp();
+    user.otp = otp;
+    user.otpExpires = expires;
+    await this.usersRepository.save(user);
+
+    await this.emailService.sendEmail(user.email, 'Verify OTP', otp);
+    console.log(`New OTP for ${user.email}: ${otp}`);
+
+    return { msg: 'A new OTP has been sent to your email.' };
   }
 
   async login({ email, password }: LoginInput): Promise<AuthResponse> {
     const user = await this.usersRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'password', 'role'],
+      select: ['id', 'email', 'password', 'role', 'isVerified'],
     });
 
     if (!user) {
@@ -121,12 +181,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
+    if (!user.isVerified) {
+      throw new UnauthorizedException(
+        'Account not verified. Please check your email for an OTP.',
+      );
+    }
 
     const tokens = await this.generateTokens(user);
     return tokens;
-
   }
-
   async generateTokens(user: User): Promise<AuthResponse> {
     if (user.role === Role.PASSENGER) {
       const passenger = await this.passengersRepository.findOne({
@@ -144,7 +207,6 @@ export class AuthService {
           expiresIn: '7d',
         },
       );
-
 
       return { accessToken, refreshToken };
     }
@@ -190,7 +252,6 @@ export class AuthService {
       },
     );
 
-
     return {
       accessToken,
       refreshToken,
@@ -203,6 +264,14 @@ export class AuthService {
 
     const tokens: AuthResponse = await this.generateTokens(user);
     return tokens;
+  }
+
+  private generateOtp(): { otp: string; expires: Date } {
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Set expiry to 10 minutes from now
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    return { otp, expires };
   }
 
   async findOne(id: string): Promise<User> {
