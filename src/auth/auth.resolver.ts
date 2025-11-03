@@ -60,6 +60,14 @@ export class AuthResolver {
     return this.authService.refreshToken(user.userId);
   }
 
+  @Mutation(() => AuthResponse, { name: 'refreshToken' })
+  @UseGuards(RefreshTokenGuard) // Use the new guard
+  async refreshToken(
+    @CurrentUser() user: IUser, // Get payload from the validated refresh token
+  ): Promise<AuthResponse> {
+    return this.authService.refreshToken(user.userId);
+  }
+
   @UseGuards(AuthGuard)
   @Query(() => Me, { name: 'me' })
   async me(@CurrentUser() user: IUser) {

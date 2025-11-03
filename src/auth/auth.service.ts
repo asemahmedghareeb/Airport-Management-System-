@@ -1,4 +1,3 @@
-import { FlightStaff } from './../flight/entities/flight_staff';
 import { Role } from 'src/auth/role.enum';
 import {
   Injectable,
@@ -19,7 +18,10 @@ import { RegisterPassengerInput } from './dto/passenger.dto';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { RegisterStaffInput } from './dto/staff.dto';
+<<<<<<< HEAD
 import { ref } from 'process';
+=======
+>>>>>>> 57f58c963b8584c3c9b8dd12b084228e9cb36171
 
 @Injectable()
 export class AuthService {
@@ -122,7 +124,12 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials.');
     }
+<<<<<<< HEAD
     return await this.generateTokens(user);
+=======
+    const tokens = await this.generateTokens(user);
+    return tokens;
+>>>>>>> 57f58c963b8584c3c9b8dd12b084228e9cb36171
   }
 
   async generateTokens(user: User): Promise<AuthResponse> {
@@ -135,6 +142,7 @@ export class AuthService {
         role: user.role,
         passengerId: passenger?.id,
       };
+<<<<<<< HEAD
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = this.jwtService.sign(
         { id: user.id },
@@ -142,6 +150,16 @@ export class AuthService {
           expiresIn: '7d',
         },
       );
+=======
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '7d',
+      });
+>>>>>>> 57f58c963b8584c3c9b8dd12b084228e9cb36171
       return { accessToken, refreshToken };
     }
 
@@ -156,6 +174,7 @@ export class AuthService {
         staffId: staff?.id,
         staffRole: staff?.role,
       };
+<<<<<<< HEAD
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = this.jwtService.sign(
         { id: user.id },
@@ -163,6 +182,16 @@ export class AuthService {
           expiresIn: '7d',
         },
       );
+=======
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '7d',
+      });
+>>>>>>> 57f58c963b8584c3c9b8dd12b084228e9cb36171
       return { accessToken, refreshToken };
     }
 
@@ -176,6 +205,7 @@ export class AuthService {
       staffRole: admin?.role,
       airportId: admin?.airportId,
     };
+<<<<<<< HEAD
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(
       { id: user.id },
@@ -183,6 +213,16 @@ export class AuthService {
         expiresIn: '7d',
       },
     );
+=======
+    const accessToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
+    });
+>>>>>>> 57f58c963b8584c3c9b8dd12b084228e9cb36171
 
     return {
       accessToken,
@@ -193,8 +233,13 @@ export class AuthService {
   async refreshToken(userId: string): Promise<AuthResponse> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException();
+<<<<<<< HEAD
     const tokens: AuthResponse = await this.generateTokens(user);
 
+=======
+
+    const tokens = await this.generateTokens(user);
+>>>>>>> 57f58c963b8584c3c9b8dd12b084228e9cb36171
     return tokens;
   }
 
