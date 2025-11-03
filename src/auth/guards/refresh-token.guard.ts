@@ -26,16 +26,11 @@ export class RefreshTokenGuard implements CanActivate {
     }
 
     try {
-      // Verify the token using your REFRESH_TOKEN_SECRET
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
-      // --- IMPORTANT ---
-      // Attach the payload to the request object
-      // Your @CurrentUser decorator will read from here
-      req.user = payload; 
-      
+      req.user = payload;
     } catch (e) {
       throw new UnauthorizedException('Invalid or expired refresh token.');
     }

@@ -51,19 +51,12 @@ export class AuthResolver {
   async login(@Args('input') input: LoginInput): Promise<AuthResponse> {
     return this.authService.login(input);
   }
+
+
   @Mutation(() => AuthResponse, { name: 'refreshToken' })
   @UseGuards(RefreshTokenGuard) 
   async refreshToken(
     @CurrentUser() user: IUser,
-  ): Promise<AuthResponse> {
-
-    return this.authService.refreshToken(user.userId);
-  }
-
-  @Mutation(() => AuthResponse, { name: 'refreshToken' })
-  @UseGuards(RefreshTokenGuard) // Use the new guard
-  async refreshToken(
-    @CurrentUser() user: IUser, // Get payload from the validated refresh token
   ): Promise<AuthResponse> {
     return this.authService.refreshToken(user.userId);
   }
