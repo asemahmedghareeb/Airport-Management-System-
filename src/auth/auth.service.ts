@@ -1,4 +1,3 @@
-import { FlightStaff } from './../flight/entities/flight_staff';
 import { Role } from 'src/auth/role.enum';
 import {
   Injectable,
@@ -19,7 +18,6 @@ import { RegisterPassengerInput } from './dto/passenger.dto';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { RegisterStaffInput } from './dto/staff.dto';
-
 
 @Injectable()
 export class AuthService {
@@ -122,7 +120,11 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials.');
     }
+    const tokens = await this.generateTokens(user);
+    return tokens;
+  }
 
+  async generateTokens(user: User): Promise<AuthResponse> {
     if (user.role === Role.PASSENGER) {
       const passenger = await this.passengersRepository.findOne({
         where: { userId: user.id },
@@ -132,8 +134,15 @@ export class AuthService {
         role: user.role,
         passengerId: passenger?.id,
       };
-      const accessToken = this.jwtService.sign(payload);
-      return { accessToken };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '7d',
+      });
+      return { accessToken, refreshToken };
     }
 
     if (user.role === Role.STAFF) {
@@ -147,8 +156,15 @@ export class AuthService {
         staffId: staff?.id,
         staffRole: staff?.role,
       };
-      const accessToken = this.jwtService.sign(payload);
-      return { accessToken };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '7d',
+      });
+      return { accessToken, refreshToken };
     }
     const admin = await this.staffRepository.findOne({
       where: { userId: user.id },
@@ -160,11 +176,27 @@ export class AuthService {
       staffRole: admin?.role,
       airportId: admin?.airportId,
     };
-    const accessToken = this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
+    });
 
     return {
       accessToken,
+      refreshToken,
     };
+  }
+
+  async refreshToken(userId: string): Promise<AuthResponse> {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException();
+
+    const tokens = await this.generateTokens(user);
+    return tokens;
   }
 
   async findOne(id: string): Promise<User> {

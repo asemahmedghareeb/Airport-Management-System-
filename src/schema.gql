@@ -110,6 +110,7 @@ type PaginatedPassenger {
 
 type AuthResponse {
   accessToken: String!
+  refreshToken: String!
   user: User!
 }
 
@@ -179,6 +180,7 @@ type Mutation {
   registerPassenger(input: RegisterPassengerInput!): RegisterResponse!
   registerStaff(input: RegisterStaffInput!): RegisterResponse!
   login(input: LoginInput!): AuthResponse!
+  refreshToken: AuthResponse!
   createAirport(input: CreateAirportInput!): Airport!
   updateAirport(input: UpdateAirportInput!): Airport!
   removeAirport(id: ID!): Boolean!
