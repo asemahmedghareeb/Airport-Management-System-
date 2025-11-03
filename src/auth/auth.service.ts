@@ -19,7 +19,7 @@ import { RegisterPassengerInput } from './dto/passenger.dto';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { RegisterStaffInput } from './dto/staff.dto';
-
+import { ref } from 'process';
 
 @Injectable()
 export class AuthService {
@@ -122,7 +122,10 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials.');
     }
+    return await this.generateTokens(user);
+  }
 
+  async generateTokens(user: User): Promise<AuthResponse> {
     if (user.role === Role.PASSENGER) {
       const passenger = await this.passengersRepository.findOne({
         where: { userId: user.id },
@@ -133,7 +136,13 @@ export class AuthService {
         passengerId: passenger?.id,
       };
       const accessToken = this.jwtService.sign(payload);
-      return { accessToken };
+      const refreshToken = this.jwtService.sign(
+        { id: user.id },
+        {
+          expiresIn: '7d',
+        },
+      );
+      return { accessToken, refreshToken };
     }
 
     if (user.role === Role.STAFF) {
@@ -148,8 +157,15 @@ export class AuthService {
         staffRole: staff?.role,
       };
       const accessToken = this.jwtService.sign(payload);
-      return { accessToken };
+      const refreshToken = this.jwtService.sign(
+        { id: user.id },
+        {
+          expiresIn: '7d',
+        },
+      );
+      return { accessToken, refreshToken };
     }
+
     const admin = await this.staffRepository.findOne({
       where: { userId: user.id },
     });
@@ -161,10 +177,25 @@ export class AuthService {
       airportId: admin?.airportId,
     };
     const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(
+      { id: user.id },
+      {
+        expiresIn: '7d',
+      },
+    );
 
     return {
       accessToken,
+      refreshToken,
     };
+  }
+
+  async refreshToken(userId: string): Promise<AuthResponse> {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException();
+    const tokens: AuthResponse = await this.generateTokens(user);
+
+    return tokens;
   }
 
   async findOne(id: string): Promise<User> {
