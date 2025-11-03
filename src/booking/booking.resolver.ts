@@ -19,10 +19,10 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
-import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
+import { IsOwnerGuard } from 'src/passenger/guards/isIwner.guard';
 import { FlightLoader } from 'src/dataloaders/flight.loader';
 import { PassengerLoader } from 'src/dataloaders/passenger.loader';
-// import { IsPermittedAdmin } from './guards/isPermitiedAdmin.guard';
+
 
 @UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Booking)

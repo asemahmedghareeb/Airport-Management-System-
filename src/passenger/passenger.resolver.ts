@@ -22,7 +22,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { UserLoader } from 'src/dataloaders/user.loader';
 import { BookingLoader } from 'src/dataloaders/booking.loader';
-import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
+import { IsOwnerGuard } from './guards/isIwner.guard';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Passenger)
