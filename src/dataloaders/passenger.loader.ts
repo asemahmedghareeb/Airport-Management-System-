@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
-
 import { Scope } from '@nestjs/common';
 import { PassengerService } from 'src/passenger/passenger.service';
 import { Passenger } from 'src/passenger/entities/passenger.entity';
@@ -16,7 +15,6 @@ export class PassengerLoader {
       );
 
       const passengerMap = new Map(passengers.map((p) => [p.id, p]));
-
       return ids.map((id) => passengerMap.get(id) as Passenger);
     },
   );

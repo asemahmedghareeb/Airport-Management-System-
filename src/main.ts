@@ -10,14 +10,13 @@ async function bootstrap() {
     rateLimit({
       windowMs: 60 * 1000,
       max: 100,
-      standardHeaders: true, 
-      legacyHeaders: false, 
+      standardHeaders: true,
+      legacyHeaders: false,
       message: {
         statusCode: 429,
         message: 'Too many requests, please try again later.',
       },
     }),
-
   );
   app.useGlobalPipes(
     new ValidationPipe({
@@ -44,3 +43,6 @@ bootstrap();
 //for docker logs => docker logs  Airport-management-system-container -f
 
 
+
+//passenger, bookings =>just super admins
+//create and remove airports => just super admins

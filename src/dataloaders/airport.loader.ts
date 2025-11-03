@@ -1,7 +1,5 @@
-// src/airport/airport.loader.ts
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
-
 import { Scope } from '@nestjs/common';
 import { AirportService } from 'src/airport/airport.service';
 import { Airport } from 'src/airport/entities/airport.entity';

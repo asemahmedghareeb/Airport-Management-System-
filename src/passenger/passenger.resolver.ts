@@ -22,8 +22,9 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { UserLoader } from 'src/dataloaders/user.loader';
 import { BookingLoader } from 'src/dataloaders/booking.loader';
+import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Passenger)
 export class PassengerResolver {
   constructor(
@@ -32,8 +33,7 @@ export class PassengerResolver {
     private readonly bookingLoader: BookingLoader,
   ) {}
 
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.SUPER_ADMIN)
   @Query(() => PaginatedPassenger, { name: 'passengers' })
   findAll(
     @Args('pagination', { nullable: true })
@@ -43,8 +43,8 @@ export class PassengerResolver {
     return this.passengerService.findAll(pagination, filter);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(IsOwnerGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PASSENGER)
   @Query(() => Passenger, {
     name: 'passenger',
   })
@@ -52,8 +52,8 @@ export class PassengerResolver {
     return this.passengerService.findOne(id);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(IsOwnerGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PASSENGER)
   @Mutation(() => Passenger)
   updatePassenger(
     @Args('input') input: UpdatePassengerInput,
@@ -61,8 +61,8 @@ export class PassengerResolver {
     return this.passengerService.update(input);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(IsOwnerGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PASSENGER)
   @Mutation(() => Passenger)
   deletePassenger(
     @Args('id', { type: () => ID }) id: string,

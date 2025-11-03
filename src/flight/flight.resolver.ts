@@ -22,43 +22,44 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { Staff } from 'src/staff/entities/staff.entity';
-import { FlightOwnershipGuard } from './guards/flightOwnerShip.guard';
+import { IsFlightSTaff } from './guards/isFlightStaff.guard';
 import { AirportLoader } from 'src/dataloaders/airport.loader';
 import { BookingLoader } from 'src/dataloaders/booking.loader';
 import { StaffLoader } from 'src/dataloaders/staff.loader';
+import { IsFlightAdmin } from './guards/isFlightAdmin.guard';
+import { IsFlightAuthorized } from './guards/isflightAuthorized.guard';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Flight)
 export class FlightResolver {
   constructor(
     private readonly flightService: FlightService,
-    private readonly airportLoader:   AirportLoader,
+    private readonly airportLoader: AirportLoader,
     private readonly bookingLoader: BookingLoader,
     private readonly staffLoader: StaffLoader,
   ) {}
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsFlightAuthorized)
   @Roles(Role.ADMIN)
   @Mutation(() => Flight)
   createFlight(@Args('input') input: CreateFlightInput) {
     return this.flightService.create(input);
   }
 
-  @UseGuards(RolesGuard, FlightOwnershipGuard)
+  @UseGuards(IsFlightAuthorized)
   @Roles(Role.ADMIN, Role.STAFF)
   @Mutation(() => Flight)
   updateFlight(@Args('input') input: UpdateFlightInput) {
     return this.flightService.update(input);
   }
 
-  @UseGuards(RolesGuard, FlightOwnershipGuard)
+  @UseGuards(IsFlightAuthorized)
   @Roles(Role.ADMIN, Role.STAFF)
   @Mutation(() => Boolean)
   removeFlight(@Args('id', { type: () => ID, nullable: true }) id: string) {
     return this.flightService.remove(id);
   }
 
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Query(() => PaginatedFlightResponse)
   async flights(
@@ -70,7 +71,7 @@ export class FlightResolver {
     return this.flightService.findAll(pagination, filter);
   }
 
-  @UseGuards(RolesGuard, FlightOwnershipGuard)
+  @UseGuards(IsFlightAuthorized)
   @Roles(Role.ADMIN, Role.STAFF)
   @Query(() => Flight)
   flight(@Args('id', { type: () => ID }) id: string) {
@@ -78,32 +79,24 @@ export class FlightResolver {
   }
 
   @ResolveField(() => Airport)
-  departureAirport(
-    @Parent() flight: Flight,
-  ): Promise<Airport> | null {
+  departureAirport(@Parent() flight: Flight): Promise<Airport> | null {
     if (!flight.departureAirportId) return null;
     return this.airportLoader.airportById.load(flight.departureAirportId);
   }
 
   @ResolveField(() => Airport)
-  destinationAirport(
-    @Parent() flight: Flight,
-  ): Promise<Airport> | null {
+  destinationAirport(@Parent() flight: Flight): Promise<Airport> | null {
     if (!flight.destinationAirportId) return null;
     return this.airportLoader.airportById.load(flight.destinationAirportId);
   }
 
   @ResolveField(() => [Booking], { nullable: true })
-  bookings(
-    @Parent() flight: Flight,
-  ): Promise<Booking[]> {
+  bookings(@Parent() flight: Flight): Promise<Booking[]> {
     return this.bookingLoader.bookingsByFlightId.load(flight.id);
   }
 
   @ResolveField(() => [Staff], { nullable: true })
-  staffAssignments(
-    @Parent() flight: Flight,
-  ): Promise<Staff[]> {
+  staffAssignments(@Parent() flight: Flight): Promise<Staff[]> {
     return this.staffLoader.staffByFlightId.load(flight.id);
   }
 }

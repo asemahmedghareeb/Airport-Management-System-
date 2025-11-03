@@ -27,6 +27,7 @@ interface IUser {
   userId: string;
   role: string;
 }
+
 @Resolver(() => User)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
@@ -56,7 +57,7 @@ export class AuthResolver {
     return this.authService.findOne(user.userId);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard,RolesGuard)
   @Roles(Role.ADMIN)
   @Query(() => User, { name: 'user' })
   async findUser(@Args('id') id: string): Promise<User> {

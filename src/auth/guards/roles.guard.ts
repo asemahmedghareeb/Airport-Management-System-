@@ -28,8 +28,11 @@ export class RolesGuard implements CanActivate {
       );
     }
     const userRoles: string[] = user.role || [];
+    const staffRole = user?.staffRole;
+    console.log(requiredRoles);
     const has = requiredRoles.some((role) => userRoles.includes(role));
-    if (!has)
+    const hasStaff = requiredRoles.some((role) => staffRole.includes(role));
+    if (!has && !hasStaff)
       throw new ForbiddenException(
         `Required role: ${requiredRoles.join(', ')}`,
       );

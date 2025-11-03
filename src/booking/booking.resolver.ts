@@ -22,8 +22,9 @@ import { Role } from 'src/auth/role.enum';
 import { IsOwnerGuard } from 'src/common/guards/isIwner.guard';
 import { FlightLoader } from 'src/dataloaders/flight.loader';
 import { PassengerLoader } from 'src/dataloaders/passenger.loader';
+// import { IsPermittedAdmin } from './guards/isPermitiedAdmin.guard';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Booking)
 export class BookingResolver {
   constructor(
@@ -33,7 +34,6 @@ export class BookingResolver {
   ) {}
 
   @Roles(Role.ADMIN, Role.PASSENGER)
-  @UseGuards(RolesGuard)
   @Mutation(() => Booking, {
     name: 'bookFlight',
     description:
@@ -44,7 +44,7 @@ export class BookingResolver {
   }
 
   @Roles(Role.ADMIN, Role.PASSENGER)
-  @UseGuards(RolesGuard, IsOwnerGuard)
+  @UseGuards(IsOwnerGuard)
   @Mutation(() => Booking, {
     name: 'updateBooking',
   })
@@ -53,7 +53,7 @@ export class BookingResolver {
   }
 
   @Roles(Role.ADMIN, Role.PASSENGER)
-  @UseGuards(RolesGuard, IsOwnerGuard)
+  @UseGuards(IsOwnerGuard)
   @Mutation(() => Booking, {
     name: 'deleteBooking',
   })
@@ -62,7 +62,7 @@ export class BookingResolver {
   }
 
   @Roles(Role.ADMIN, Role.PASSENGER)
-  @UseGuards(RolesGuard, IsOwnerGuard)
+  @UseGuards(IsOwnerGuard)
   @Query(() => Booking, {
     name: 'booking',
   })
@@ -70,8 +70,7 @@ export class BookingResolver {
     return this.bookingService.findOne(id);
   }
 
-  @Roles(Role.ADMIN)
-  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
   @Query(() => PaginatedBooking, {
     name: 'bookings',
   })
@@ -83,7 +82,7 @@ export class BookingResolver {
   }
 
   @Roles(Role.PASSENGER, Role.ADMIN)
-  @UseGuards(RolesGuard, IsOwnerGuard)
+  @UseGuards(IsOwnerGuard)
   @Query(() => [Booking], {
     name: 'myBookings',
   })

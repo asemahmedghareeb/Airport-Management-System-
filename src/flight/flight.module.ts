@@ -11,10 +11,12 @@ import { EmailsService } from 'src/emails/emails.service';
 import { BullModule } from '@nestjs/bull';
 import { FlightNotificationProcessor } from './flight-notification.processor';
 import { FlightEmailProcessor } from './flight-email.processor';
+import { FlightStaff } from './entities/flight_staff';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Flight, Airport, Booking, User]),
+    
+    TypeOrmModule.forFeature([Flight, Airport, Booking, User, FlightStaff]),
     BullModule.registerQueue({
       name: 'notification',
       defaultJobOptions: {

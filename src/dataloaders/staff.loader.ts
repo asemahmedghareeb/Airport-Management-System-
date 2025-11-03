@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
 import { Staff } from '../staff/entities/staff.entity';
@@ -13,52 +12,47 @@ type FlightStaffWithStaffId = FlightStaff & { staffId: string };
 export class StaffLoader {
   constructor(private readonly staffService: StaffService) {}
 
+  readonly staffByAirportId: DataLoader<string, Staff[]> = new DataLoader<
+    string,
+    Staff[]
+  >(async (airportIds: string[]) => {
+    const staffMembers = await this.staffService.findByAirportIds(airportIds);
+    const staffMap = new Map<string, Staff[]>();
 
-    readonly staffByAirportId: DataLoader<string, Staff[]> = new DataLoader<string, Staff[]>(
-      async (airportIds: string[]) => {
-        const staffMembers =
-          await this.staffService.findByAirportIds(airportIds);
-        const staffMap = new Map<string, Staff[]>();
+    airportIds.forEach((id) => staffMap.set(id, []));
 
-        airportIds.forEach((id) => staffMap.set(id, []));
+    staffMembers.forEach((staff) => {
+      if (staff.airportId) {
+        const current = staffMap.get(staff.airportId) || [];
+        staffMap.set(staff.airportId, [...current, staff]);
+      }
+    });
 
-        staffMembers.forEach((staff) => {
-          if (staff.airportId) {
-            const current = staffMap.get(staff.airportId) || [];
-            staffMap.set(staff.airportId, [...current, staff]);
-          }
-        });
+    return airportIds.map((id) => staffMap.get(id) || []);
+  });
 
-        return airportIds.map((id) => staffMap.get(id) || []);
-      },
-    );
+  readonly staffByFlightId: DataLoader<string, Staff[]> = new DataLoader<
+    string,
+    Staff[]
+  >(async (flightIds: string[]) => {
+    const rawStaffResults = await this.staffService.findByFlightIds(flightIds);
 
-    readonly staffByFlightId: DataLoader<string, Staff[]> = new DataLoader<string, Staff[]>(
-      async (flightIds: string[]) => {
-        const rawStaffResults =
-          await this.staffService.findByFlightIds(flightIds);
+    const staffWithKeys = rawStaffResults as StaffWithFlightId[];
+    
+    const mappedStaff = mapArrayToIds(staffWithKeys, 'flightId');
 
-        const staffWithKeys = rawStaffResults as StaffWithFlightId[];
+    return flightIds.map((id) => mappedStaff[id] || []);
+  });
 
-        const mappedStaff = mapArrayToIds(staffWithKeys, 'flightId');
+  readonly flightAssignmentsByStaffId: DataLoader<string, FlightStaff[]> =
+    new DataLoader<string, FlightStaff[]>(async (staffIds: string[]) => {
+      const rawAssignments =
+        await this.staffService.flightAssignmentsByStaffIds(staffIds);
 
-        return flightIds.map((id) => mappedStaff[id] || []);
-      },
-    );
+      const assignmentsWithKeys = rawAssignments as FlightStaffWithStaffId[];
 
-    readonly flightAssignmentsByStaffId: DataLoader<string, FlightStaff[]> = new DataLoader<string, FlightStaff[]>(
-      async (staffIds: string[]) => {
-        const rawAssignments =
-          await this.staffService.flightAssignmentsByStaffIds(staffIds);
+      const mappedAssignments = mapArrayToIds(assignmentsWithKeys, 'staffId');
 
-        const assignmentsWithKeys = rawAssignments as FlightStaffWithStaffId[];
-
-        const mappedAssignments = mapArrayToIds(assignmentsWithKeys, 'staffId');
-
-        return staffIds.map((id) => mappedAssignments[id] || []);
-      },
-    );
-
-   
-  
+      return staffIds.map((id) => mappedAssignments[id] || []);
+    });
 }

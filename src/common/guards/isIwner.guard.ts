@@ -7,10 +7,17 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.enum';
 import { PassengerPayload } from 'src/passenger/interfaces/passenger.payload';
+import { Booking } from 'src/booking/entities/booking.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class IsOwnerGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(
+    @InjectRepository(Booking)
+    private bookingRepository: Repository<Booking>,
+  ) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = GqlExecutionContext.create(context);
     const args = ctx.getArgs();
     const user = ctx.getContext().req.user as PassengerPayload;
@@ -32,7 +39,12 @@ export class IsOwnerGuard implements CanActivate {
         return true;
       }
 
-      if (user.bookings && user.bookings.includes(requestedId)) {
+      const booking = await this.bookingRepository.find({
+        where: { passengerId: user.passengerId },
+      });
+
+      const bookingIds = booking.map((booking) => booking.id);
+      if (bookingIds?.includes(requestedId)) {
         return true;
       }
     }

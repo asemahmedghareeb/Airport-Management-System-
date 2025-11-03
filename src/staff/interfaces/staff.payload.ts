@@ -3,5 +3,6 @@ export interface StaffPayload {
   role: string;
   staffId: string;
   airportId: string;
-  flights: string[];
+  staffRole:string
+  // flights: string[];
 }

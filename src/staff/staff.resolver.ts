@@ -25,8 +25,12 @@ import { Role } from 'src/auth/role.enum';
 import { AirportLoader } from 'src/dataloaders/airport.loader';
 import { StaffLoader } from 'src/dataloaders/staff.loader';
 import { UserLoader } from 'src/dataloaders/user.loader';
+import { IsStaffAdmin } from './guards/isStaffAdmin.guard';
+import { IsAirportAdmin } from 'src/airport/guards/isAirportAdmin.guard';
+import { IsFlightAdmin } from 'src/flight/guards/isFlightAdmin.guard';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.SUPER_ADMIN)
 @Resolver(() => Staff)
 export class StaffResolver {
   constructor(
@@ -36,8 +40,7 @@ export class StaffResolver {
     private readonly userLoader: UserLoader,
   ) {}
 
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.SUPER_ADMIN)
   @Query(() => PaginatedStaff, {
     name: 'staffMembers',
   })
@@ -49,7 +52,7 @@ export class StaffResolver {
     return this.staffService.findAll(pagination, filter);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsStaffAdmin)
   @Roles(Role.ADMIN)
   @Query(() => Staff, {
     name: 'staffMember',
@@ -58,7 +61,7 @@ export class StaffResolver {
     return this.staffService.findOne(id);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsAirportAdmin)
   @Roles(Role.ADMIN)
   @Query(() => [Staff], {
     name: 'staffByAirport',
@@ -69,7 +72,7 @@ export class StaffResolver {
     return this.staffService.findByAirport(airportId);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsFlightAdmin)
   @Roles(Role.ADMIN)
   @Query(() => [Staff], {
     name: 'staffByFlight',
@@ -80,21 +83,21 @@ export class StaffResolver {
     return this.staffService.findByFlight(flightId);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsStaffAdmin)
   @Roles(Role.ADMIN)
   @Mutation(() => Staff)
   updateStaff(@Args('input') input: UpdateStaffInput): Promise<Staff> {
     return this.staffService.update(input);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsStaffAdmin)
   @Roles(Role.ADMIN)
   @Mutation(() => Staff)
   deleteStaff(@Args('id', { type: () => ID }) id: string): Promise<Staff> {
     return this.staffService.delete(id);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(IsFlightAdmin, IsStaffAdmin)
   @Roles(Role.ADMIN)
   @Mutation(() => FlightStaff)
   assignStaffToFlight(

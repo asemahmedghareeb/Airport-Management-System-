@@ -18,8 +18,6 @@ export class BookingService {
   constructor(
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
-    @InjectRepository(Passenger)
-    private passengerRepository: Repository<Passenger>,
     @InjectRepository(Flight)
     private flightRepository: Repository<Flight>,
     private dataSource: DataSource,

@@ -19,7 +19,7 @@ import { RegisterPassengerInput } from './dto/passenger.dto';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { RegisterStaffInput } from './dto/staff.dto';
-import { Booking } from 'src/booking/entities/booking.entity';
+
 
 @Injectable()
 export class AuthService {
@@ -30,12 +30,8 @@ export class AuthService {
     private passengersRepository: Repository<Passenger>,
     @InjectRepository(Staff)
     private staffRepository: Repository<Staff>,
-    @InjectRepository(FlightStaff)
-    private flightStaffRepository: Repository<FlightStaff>,
     @InjectRepository(Airport)
     private airportsRepository: Repository<Airport>,
-    @InjectRepository(Booking)
-    private bookingRepository: Repository<Booking>,
     private jwtService: JwtService,
   ) {}
 
@@ -131,15 +127,10 @@ export class AuthService {
       const passenger = await this.passengersRepository.findOne({
         where: { userId: user.id },
       });
-      const bookings = await this.bookingRepository.find({
-        where: { passengerId: passenger?.id },
-      });
-      const bookingIds = bookings.map((booking) => booking.id);
       const payload = {
         userId: user.id,
         role: user.role,
         passengerId: passenger?.id,
-        bookings: bookingIds,
       };
       const accessToken = this.jwtService.sign(payload);
       return { accessToken };
@@ -149,21 +140,26 @@ export class AuthService {
       const staff = await this.staffRepository.findOne({
         where: { userId: user.id },
       });
-      const flightStaff = await this.flightStaffRepository.find({
-        where: { staffId: staff?.id },
-      });
 
       const payload = {
         userId: user.id,
         role: user.role,
         staffId: staff?.id,
-        airportId: staff?.airportId,//todo remove this line
-        flights: flightStaff?.map((flightStaff) => flightStaff.flightId), //todo remove this line
+        staffRole: staff?.role,
       };
       const accessToken = this.jwtService.sign(payload);
       return { accessToken };
     }
-    const payload = { userId: user.id, role: user.role };
+    const admin = await this.staffRepository.findOne({
+      where: { userId: user.id },
+    });
+
+    const payload = {
+      userId: user.id,
+      role: user.role,
+      staffRole: admin?.role,
+      airportId: admin?.airportId,
+    };
     const accessToken = this.jwtService.sign(payload);
 
     return {
