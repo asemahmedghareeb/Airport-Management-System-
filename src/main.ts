@@ -22,7 +22,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true,
+      transform: true, 
     }),
   );
   await app.listen(process.env.PORT!);
@@ -41,8 +41,3 @@ bootstrap();
 
 //opening container bash => docker exec -it   Airport-management-system-container bash
 //for docker logs => docker logs  Airport-management-system-container -f
-
-
-
-//passenger, bookings =>just super admins
-//create and remove airports => just super admins

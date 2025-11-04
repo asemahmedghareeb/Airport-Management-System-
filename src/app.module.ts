@@ -25,6 +25,7 @@ import { BullModule } from '@nestjs/bull';
 import { DataLoadersModule } from './dataLoaders/dataLoaders.module';
 import { PubSubModule } from './pubsub/pubsub.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { CommonModule } from './common/common.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -93,6 +94,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     EmailsModule,
     DataLoadersModule,
     PubSubModule,
+    CommonModule,
   ],
 })
 export class AppModule {}
