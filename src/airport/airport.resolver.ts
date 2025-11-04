@@ -20,8 +20,8 @@ import { Role } from 'src/auth/role.enum';
 import { PaginationInput } from '../common/pagination.input';
 import { PaginatedAirportResponse } from './dto/paginated-airport.response';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { StaffLoader } from 'src/dataloaders/staff.loader';
-import { FlightLoader } from 'src/dataloaders/flight.loader';
+import { StaffLoader } from 'src/dataLoaders/staff.loader';
+import { FlightLoader } from 'src/dataLoaders/flight.loader';
 import { IsAirportAdmin } from 'src/airport/guards/isAirportAdmin.guard';
 
 @UseGuards(AuthGuard, RolesGuard)

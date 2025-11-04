@@ -23,9 +23,9 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { Staff } from 'src/staff/entities/staff.entity';
-import { AirportLoader } from 'src/dataloaders/airport.loader';
-import { BookingLoader } from 'src/dataloaders/booking.loader';
-import { StaffLoader } from 'src/dataloaders/staff.loader';
+import { AirportLoader } from 'src/dataLoaders/airport.loader';
+import { BookingLoader } from 'src/dataLoaders/booking.loader';
+import { StaffLoader } from 'src/dataLoaders/staff.loader';
 import { IsFlightAuthorized } from './guards/isflightAuthorized.guard';
 
 

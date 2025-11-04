@@ -22,7 +22,7 @@ import { PushNotificationsModule } from './push-notifications/push-notifications
 import { PushDevice } from './push-notifications/entities/PushDevice.entity';
 import { EmailsModule } from './emails/emails.module';
 import { BullModule } from '@nestjs/bull';
-import { DataloadersModule } from './dataloaders/dataloaders.module';
+import { DataLoadersModule } from './dataLoaders/dataLoaders.module';
 import { PubSubModule } from './pubsub/pubsub.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 @Module({
@@ -66,7 +66,6 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       context: ({ req, res }) => ({ req, res }),
-      // installSubscriptionHandlers: true, // <-- THIS MUST BE TRUE
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
       subscriptions: {
@@ -92,7 +91,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     BookingModule,
     PushNotificationsModule,
     EmailsModule,
-    DataloadersModule,
+    DataLoadersModule,
     PubSubModule,
   ],
 })

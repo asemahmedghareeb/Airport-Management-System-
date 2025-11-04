@@ -18,4 +18,3 @@ export class FlightSubscriptionResolver {
     return this.pubSub.asyncIterator('flightStatusUpdated');
   }
 }
- 

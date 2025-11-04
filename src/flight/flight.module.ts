@@ -9,11 +9,10 @@ import { Booking } from 'src/booking/entities/booking.entity';
 import { User } from 'src/auth/entities/user.entity';
 import { EmailsService } from 'src/emails/emails.service';
 import { BullModule } from '@nestjs/bull';
-import { FlightNotificationProcessor } from './flight-notification.processor';
-import { FlightEmailProcessor } from './flight-email.processor';
 import { FlightStaff } from './entities/flight_staff';
 import { PubSubModule } from 'src/pubsub/pubsub.module';
 import { FlightSubscriptionResolver } from './flight.subscription.resolver';
+
 
 @Module({
   imports: [
@@ -44,15 +43,12 @@ import { FlightSubscriptionResolver } from './flight.subscription.resolver';
         removeOnFail: true,
       },
     }),
-    PubSubModule,
   ],
   providers: [
     FlightService,
     FlightResolver,
     OneSignalService,
     EmailsService,
-    FlightNotificationProcessor,
-    FlightEmailProcessor,
     FlightSubscriptionResolver,
   ],
   exports: [FlightService],

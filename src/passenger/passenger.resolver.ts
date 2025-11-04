@@ -20,8 +20,8 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
-import { UserLoader } from 'src/dataloaders/user.loader';
-import { BookingLoader } from 'src/dataloaders/booking.loader';
+import { UserLoader } from 'src/dataLoaders/user.loader';
+import { BookingLoader } from 'src/dataLoaders/booking.loader';
 import { IsOwnerGuard } from './guards/isIwner.guard';
 
 @UseGuards(AuthGuard, RolesGuard)

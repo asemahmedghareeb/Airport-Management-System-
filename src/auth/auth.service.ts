@@ -4,7 +4,6 @@ import {
   BadRequestException,
   UnauthorizedException,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -190,6 +189,8 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
     return tokens;
   }
+
+
   async generateTokens(user: User): Promise<AuthResponse> {
     if (user.role === Role.PASSENGER) {
       const passenger = await this.passengersRepository.findOne({
@@ -267,8 +268,8 @@ export class AuthService {
   }
 
   private generateOtp(): { otp: string; expires: Date } {
-    // Generate a 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate a 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     // Set expiry to 10 minutes from now
     const expires = new Date(Date.now() + 10 * 60 * 1000);
     return { otp, expires };
