@@ -16,9 +16,9 @@ export class FlightNotificationProcessor {
   async handleFlightStatusUpdate(job: Job<FlightStatusUpdateJob>) {
     const { flightNumber, newStatus, playerIds } = job.data;
 
-    console.log(
-      `Processing flight status update notification for flight ${flightNumber}`,
-    );
+    // console.log(
+    //   `Processing flight status update notification for flight ${flightNumber}`,
+    // );
 
     if (playerIds.length === 0) {
       console.log(
@@ -33,7 +33,7 @@ export class FlightNotificationProcessor {
         { en: `The flight status is now: ${newStatus}` },
         playerIds,
       );
-      console.log(`Successfully sent notifications for flight ${flightNumber}`);
+      // console.log(`Successfully sent notifications for flight ${flightNumber}`);
     } catch (err) {
       console.error(`Notification failed for flight ${flightNumber}:`, err);
       throw err;

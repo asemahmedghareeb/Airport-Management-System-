@@ -326,3 +326,7 @@ input SendNotificationInput {
   message: String!
   playerIds: [String!]!
 }
+
+type Subscription {
+  flightStatusUpdated(flightId: ID!): Flight!
+}

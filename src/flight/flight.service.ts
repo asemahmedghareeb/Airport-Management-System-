@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Flight } from './entities/flight.entity';
@@ -11,8 +11,9 @@ import { Booking } from 'src/booking/entities/booking.entity';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bullmq';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
-@Injectable() 
+@Injectable()
 export class FlightService {
   constructor(
     @InjectRepository(Flight)
@@ -24,7 +25,8 @@ export class FlightService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     @InjectQueue('notification') private readonly notificationQueue: Queue,
-    @InjectQueue('email') private readonly emailQueue: Queue,   
+    @InjectQueue('email') private readonly emailQueue: Queue,
+    @Inject('PUB_SUB') private readonly pubSub: RedisPubSub,
   ) {}
 
   async create(input: CreateFlightInput): Promise<Flight> {
@@ -105,7 +107,6 @@ export class FlightService {
         )
         .flat();
 
-     
       for (const user of users) {
         if (user.email) {
           await this.emailQueue.add(
@@ -116,8 +117,8 @@ export class FlightService {
               newStatus: updatedFlight.status,
             },
             {
-              jobId: `flight-${updatedFlight.id}-email-${user.id}-${Date.now()}`
-            }
+              jobId: `flight-${updatedFlight.id}-email-${user.id}-${Date.now()}`,
+            },
           );
         }
       }
@@ -135,6 +136,10 @@ export class FlightService {
           backoff: { type: 'exponential', delay: 5000 },
         },
       );
+
+      this.pubSub.publish('flightStatusUpdated', {
+        flightStatusUpdated: updatedFlight,
+      });
     }
 
     return updatedFlight;

@@ -23,6 +23,8 @@ import { PushDevice } from './push-notifications/entities/PushDevice.entity';
 import { EmailsModule } from './emails/emails.module';
 import { BullModule } from '@nestjs/bull';
 import { DataloadersModule } from './dataloaders/dataloaders.module';
+import { PubSubModule } from './pubsub/pubsub.module';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -36,7 +38,7 @@ import { DataloadersModule } from './dataloaders/dataloaders.module';
       },
     }),
     BullModule.registerQueue({
-      name: 'notification', 
+      name: 'notification',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -64,6 +66,12 @@ import { DataloadersModule } from './dataloaders/dataloaders.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       context: ({ req, res }) => ({ req, res }),
+      // installSubscriptionHandlers: true, // <-- THIS MUST BE TRUE
+      playground: false,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      subscriptions: {
+        'graphql-ws': true,
+      },
     }),
 
     JwtModule.registerAsync({
@@ -85,7 +93,7 @@ import { DataloadersModule } from './dataloaders/dataloaders.module';
     PushNotificationsModule,
     EmailsModule,
     DataloadersModule,
+    PubSubModule,
   ],
-
 })
 export class AppModule {}

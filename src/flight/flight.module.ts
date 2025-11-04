@@ -12,10 +12,12 @@ import { BullModule } from '@nestjs/bull';
 import { FlightNotificationProcessor } from './flight-notification.processor';
 import { FlightEmailProcessor } from './flight-email.processor';
 import { FlightStaff } from './entities/flight_staff';
+import { PubSubModule } from 'src/pubsub/pubsub.module';
+import { FlightSubscriptionResolver } from './flight.subscription.resolver';
 
 @Module({
   imports: [
-    
+    PubSubModule,
     TypeOrmModule.forFeature([Flight, Airport, Booking, User, FlightStaff]),
     BullModule.registerQueue({
       name: 'notification',
@@ -42,6 +44,7 @@ import { FlightStaff } from './entities/flight_staff';
         removeOnFail: true,
       },
     }),
+    PubSubModule,
   ],
   providers: [
     FlightService,
@@ -50,6 +53,7 @@ import { FlightStaff } from './entities/flight_staff';
     EmailsService,
     FlightNotificationProcessor,
     FlightEmailProcessor,
+    FlightSubscriptionResolver,
   ],
   exports: [FlightService],
 })

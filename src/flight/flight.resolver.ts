@@ -6,6 +6,7 @@ import {
   ID,
   ResolveField,
   Parent,
+  Subscription,
 } from '@nestjs/graphql';
 import { FlightService } from './flight.service';
 import { Flight } from './entities/flight.entity';
@@ -22,12 +23,11 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 import { Staff } from 'src/staff/entities/staff.entity';
-import { IsFlightSTaff } from './guards/isFlightStaff.guard';
 import { AirportLoader } from 'src/dataloaders/airport.loader';
 import { BookingLoader } from 'src/dataloaders/booking.loader';
 import { StaffLoader } from 'src/dataloaders/staff.loader';
-import { IsFlightAdmin } from './guards/isFlightAdmin.guard';
 import { IsFlightAuthorized } from './guards/isflightAuthorized.guard';
+
 
 @UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Flight)
@@ -78,6 +78,7 @@ export class FlightResolver {
     return this.flightService.findOne(id);
   }
 
+ 
   @ResolveField(() => Airport)
   departureAirport(@Parent() flight: Flight): Promise<Airport> | null {
     if (!flight.departureAirportId) return null;
