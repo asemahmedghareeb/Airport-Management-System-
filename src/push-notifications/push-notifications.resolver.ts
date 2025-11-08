@@ -32,6 +32,7 @@ export class PushDeviceResolver {
   async sendNotification(
     @Args('input') input: SendNotificationInput,
   ): Promise<NotificationResponse> {
+    console.log(input)
     const result = await this.oneSignalService.sendNotification(
       { en: input.title },
       { en: input.message },

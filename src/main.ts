@@ -10,7 +10,7 @@ async function bootstrap() {
     rateLimit({
       windowMs: 60 * 1000,
       max: 100,
-      standardHeaders: true, 
+      standardHeaders: true,
       legacyHeaders: false,
       message: {
         statusCode: 429,
@@ -22,7 +22,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true, 
+      transform: true,
     }),
   );
   await app.listen(process.env.PORT!);

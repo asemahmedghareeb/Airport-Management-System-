@@ -1,4 +1,3 @@
-
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
@@ -20,7 +19,7 @@ export class OneSignalService {
         {
           app_id: this.appId,
           headings,
-          contents, 
+          contents,
           include_player_ids: includePlayerIds,
         },
         {

@@ -106,7 +106,7 @@ export class FlightService {
           user.pushDevices.map((pushDevice) => pushDevice.playerId),
         )
         .flat();
-
+      console.log(PlayerIds);
       for (const user of users) {
         if (user.email) {
           await this.emailQueue.add(
