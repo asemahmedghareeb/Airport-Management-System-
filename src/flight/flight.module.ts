@@ -10,13 +10,10 @@ import { User } from 'src/auth/entities/user.entity';
 import { EmailsService } from 'src/emails/emails.service';
 import { BullModule } from '@nestjs/bull';
 import { FlightStaff } from './entities/flight_staff';
-import { PubSubModule } from 'src/pubsub/pubsub.module';
 import { FlightSubscriptionResolver } from './flight.subscription.resolver';
-
 
 @Module({
   imports: [
-    PubSubModule,
     TypeOrmModule.forFeature([Flight, Airport, Booking, User, FlightStaff]),
     BullModule.registerQueue({
       name: 'notification',
@@ -50,6 +47,7 @@ import { FlightSubscriptionResolver } from './flight.subscription.resolver';
     OneSignalService,
     EmailsService,
     FlightSubscriptionResolver,
+    
   ],
   exports: [FlightService],
 })

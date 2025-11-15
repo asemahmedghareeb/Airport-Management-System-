@@ -6,6 +6,7 @@ import {
   ID,
   ResolveField,
   Parent,
+  Context,
 } from '@nestjs/graphql';
 import { BookingService } from './booking.service';
 import { Booking } from './entities/booking.entity';
@@ -22,7 +23,8 @@ import { Role } from 'src/auth/role.enum';
 import { IsOwnerGuard } from 'src/passenger/guards/isIwner.guard';
 import { FlightLoader } from 'src/dataLoaders/flight.loader';
 import { PassengerLoader } from 'src/dataLoaders/passenger.loader';
-
+import { Transactional } from 'typeorm-transactional';
+import { Staff } from 'src/staff/entities/staff.entity';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Booking)
@@ -33,6 +35,7 @@ export class BookingResolver {
     private readonly passengerLoader: PassengerLoader,
   ) {}
 
+  @Transactional()
   @Roles(Role.ADMIN, Role.PASSENGER)
   @Mutation(() => Booking, {
     name: 'bookFlight',

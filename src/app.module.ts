@@ -23,9 +23,11 @@ import { PushDevice } from './push-notifications/entities/PushDevice.entity';
 import { EmailsModule } from './emails/emails.module';
 import { BullModule } from '@nestjs/bull';
 import { DataLoadersModule } from './dataLoaders/dataLoaders.module';
-import { PubSubModule } from './pubsub/pubsub.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { CommonModule } from './common/common.module';
+import { addTransactionalDataSource } from 'typeorm-transactional';
+import { DataSource } from 'typeorm';
+import { PubSubModule } from './pubsub/pubsub.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,27 +43,59 @@ import { CommonModule } from './common/common.module';
     BullModule.registerQueue({
       name: 'notification',
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.POSTGRES_PORT!, 10),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      synchronize: true,
-      autoLoadEntities: true,
-      // logging: true,
-      entities: [
-        User,
-        Airport,
-        Flight,
-        Staff,
-        Passenger,
-        Booking,
-        FlightStaff,
-        PushDevice,
-      ],
+    TypeOrmModule.forRootAsync({
+      useFactory() {
+        return {
+          type: 'postgres',
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.POSTGRES_PORT!, 10),
+          username: process.env.POSTGRES_USER,
+          password: process.env.POSTGRES_PASSWORD,
+          database: process.env.POSTGRES_DB,
+          synchronize: true,
+          autoLoadEntities: true,
+          //  logging: true
+          entities: [
+            User,
+            Airport,
+            Flight,
+            Staff,
+            Passenger,
+            Booking,
+            FlightStaff,
+            PushDevice,
+          ],
+        };
+      },
+      async dataSourceFactory(options) {
+        if (!options) {
+          throw new Error('Invalid options passed');
+        }
+
+        return addTransactionalDataSource(new DataSource(options));
+      },
     }),
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: process.env.DB_HOST,
+    //   port: parseInt(process.env.POSTGRES_PORT!, 10),
+    //   username: process.env.POSTGRES_USER,
+    //   password: process.env.POSTGRES_PASSWORD,
+    //   database: process.env.POSTGRES_DB,
+    //   synchronize: true,
+    //   autoLoadEntities: true,
+    //   // logging: true,
+    //   entities: [
+    //     User,
+    //     Airport,
+    //     Flight,
+    //     Staff,
+    //     Passenger,
+    //     Booking,
+    //     FlightStaff,
+    //     PushDevice,
+    // ],
+    // }),
 
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -93,8 +127,9 @@ import { CommonModule } from './common/common.module';
     PushNotificationsModule,
     EmailsModule,
     DataLoadersModule,
-    PubSubModule,
     CommonModule,
+    PubSubModule,
   ],
+ 
 })
 export class AppModule {}

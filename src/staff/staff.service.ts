@@ -72,12 +72,12 @@ export class StaffService {
     return staffMember;
   }
 
-  async update(input: UpdateStaffInput): Promise<Staff> {
+  async update(input: UpdateStaffInput,staff: Staff): Promise<Staff> {
     const { id, airportId, ...updateFields } = input;
-    const staff = await this.staffRepository.findOneBy({ id });
-    if (!staff) {
-      throw new NotFoundException(`Staff member with ID "${id}" not found.`);
-    }
+    // const staff = await this.staffRepository.findOneBy({ id });
+    // if (!staff) {
+    //   throw new NotFoundException(`Staff member with ID "${id}" not found.`);
+    // }
 
     if (airportId) {
       const airport = await this.airportRepository.findOneBy({ id: airportId });
@@ -93,11 +93,11 @@ export class StaffService {
     return this.staffRepository.save(staff);
   }
 
-  async delete(id: string): Promise<Staff> {
-    const staff = await this.staffRepository.findOneBy({ id });
-    if (!staff) {
-      throw new NotFoundException(`Staff member with ID "${id}" not found.`);
-    }
+  async delete(id: string,staff: Staff): Promise<Staff> {
+    // const staff = await this.staffRepository.findOneBy({ id });
+    // if (!staff) {
+    //   throw new NotFoundException(`Staff member with ID "${id}" not found.`);
+    // }
 
     const user = await this.userRepository.findOneBy({
       id: staff.userId,
@@ -118,7 +118,7 @@ export class StaffService {
       throw new NotFoundException(
         `Staff member with ID "${staffId}" not found.`,
       );
-    }
+    } 
 
     const flight = await this.flightRepository.findOneBy({ id: flightId });
     if (!flight) {

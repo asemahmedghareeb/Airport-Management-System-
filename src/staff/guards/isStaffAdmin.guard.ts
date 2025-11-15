@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
@@ -25,7 +26,7 @@ export class IsStaffAdmin implements CanActivate {
     const args = ctx.getArgs();
 
     if (!user) {
-      throw new ForbiddenException('No user found in request');
+      throw new UnauthorizedException('No user found in request');
     }
 
     if (user.role !== Role.ADMIN) {
@@ -49,6 +50,8 @@ export class IsStaffAdmin implements CanActivate {
         "You are not assigned to this staff's airport",
       );
     }
+
+    ctx.getContext().staff = staff;
 
     return true;
   }

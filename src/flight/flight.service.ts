@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Flight } from './entities/flight.entity';
@@ -41,6 +41,9 @@ export class FlightService {
     if (!destinationAirport)
       throw new NotFoundException('Destination airport not found');
 
+    if(departureAirport.id === destinationAirport.id){
+      throw new BadRequestException('Departure and destination airports cannot be the same');
+    }
     const flight = this.flightRepo.create({
       ...input,
       departureAirport,
@@ -50,11 +53,11 @@ export class FlightService {
     return this.flightRepo.save(flight);
   }
 
-  async update(input: UpdateFlightInput): Promise<Flight> {
-    const flight = await this.flightRepo.findOne({
-      where: { id: input.id },
-      relations: ['departureAirport', 'destinationAirport'],
-    });
+  async update(input: UpdateFlightInput,flight:Flight): Promise<Flight> {
+    // const flight = await this.flightRepo.findOne({
+    //   where: { id: input.id },
+    //   relations: ['departureAirport', 'destinationAirport'],
+    // });
     if (!flight) throw new NotFoundException('Flight not found');
     let isStatusChanged = false;
     if (input.status !== flight.status) {

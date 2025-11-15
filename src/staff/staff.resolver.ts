@@ -6,6 +6,7 @@ import {
   ID,
   ResolveField,
   Parent,
+  Context,
 } from '@nestjs/graphql';
 import { StaffService } from './staff.service';
 import { Staff } from './entities/staff.entity';
@@ -59,7 +60,7 @@ export class StaffResolver {
   })
   findOne(@Args('id', { type: () => ID }) id: string): Promise<Staff> {
     return this.staffService.findOne(id);
-  }
+  } 
 
   @UseGuards(IsAirportAdmin)
   @Roles(Role.ADMIN)
@@ -86,15 +87,15 @@ export class StaffResolver {
   @UseGuards(IsStaffAdmin)
   @Roles(Role.ADMIN)
   @Mutation(() => Staff)
-  updateStaff(@Args('input') input: UpdateStaffInput): Promise<Staff> {
-    return this.staffService.update(input);
+  updateStaff(@Args('input') input: UpdateStaffInput, @Context('staff') staff: Staff): Promise<Staff> {
+    return this.staffService.update(input,staff);
   }
 
   @UseGuards(IsStaffAdmin)
   @Roles(Role.ADMIN)
   @Mutation(() => Staff)
-  deleteStaff(@Args('id', { type: () => ID }) id: string): Promise<Staff> {
-    return this.staffService.delete(id);
+  deleteStaff(@Args('id', { type: () => ID }) id: string, @Context('staff') staff: Staff): Promise<Staff> {
+    return this.staffService.delete(id,staff);
   }
 
   @UseGuards(IsFlightAdmin, IsStaffAdmin)

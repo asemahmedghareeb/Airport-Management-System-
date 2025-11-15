@@ -29,7 +29,6 @@ export class IsFlightAuthorized implements CanActivate {
 
     if (!user) throw new ForbiddenException('No user found in request');
 
-    // ✅ Extract flightId from all possible places
     const flightId =
       args?.id ||
       args?.input?.id ||
@@ -40,11 +39,10 @@ export class IsFlightAuthorized implements CanActivate {
     if (!flightId)
       throw new BadRequestException('No flight ID provided for authorization');
 
-    // 🔍 Fetch flight info (needed for both admin & staff validation)
     const flight = await this.flightService.findOne(flightId);
     if (!flight) throw new ForbiddenException('Flight not found');
+    ctx.getContext().flight = flight;
 
-    // ✅ 1. Admin check: must belong to the flight’s departure airport
     if (user.role === Role.ADMIN) {
       if (user.airportId === flight.departureAirportId) return true;
       throw new ForbiddenException(
@@ -52,7 +50,6 @@ export class IsFlightAuthorized implements CanActivate {
       );
     }
 
-    // ✅ 2. Staff check: must be assigned to this flight
     if (user.role === Role.STAFF) {
       const assignments = await this.flightStaffRepo.find({
         where: { staffId: user.staffId },
@@ -69,7 +66,6 @@ export class IsFlightAuthorized implements CanActivate {
       throw new ForbiddenException('You are not authorized for this flight');
     }
 
-    // 🚫 Default deny
     throw new ForbiddenException('Unauthorized role');
   }
 }

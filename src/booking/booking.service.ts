@@ -20,25 +20,17 @@ export class BookingService {
     private bookingRepository: Repository<Booking>,
     @InjectRepository(Flight)
     private flightRepository: Repository<Flight>,
-    private dataSource: DataSource,
+    @InjectRepository(Passenger)
+    private passengerRepository: Repository<Passenger>,
   ) {}
 
   async bookFlight(input: BookFlightInput): Promise<Booking> {
     const { passengerId, flightId, seatNumber } = input;
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const passenger: Passenger | null = await this.passengerRepository.findOne({ where: { id: passengerId } });
+    const flight: Flight | null = await this.flightRepository.findOne({ where: { id: flightId } });
 
-    try {
-      const manager = queryRunner.manager;
-
-      const [passenger, flight] = await Promise.all([
-        manager.findOne(Passenger, { where: { id: passengerId } }),
-        manager.findOne(Flight, { where: { id: flightId } }),
-      ]);
-
-      if (!passenger) {
+    if (!passenger) {
         throw new NotFoundException(
           `Passenger with ID "${passengerId}" not found.`,
         );
@@ -47,7 +39,7 @@ export class BookingService {
         throw new NotFoundException(`Flight with ID "${flightId}" not found.`);
       }
 
-      const passengerAlreadyBooked = await manager.findOne(Booking, {
+      const passengerAlreadyBooked = await this.bookingRepository.findOne({
         where: { passenger: { id: passengerId }, flight: { id: flightId } },
       });
       if (passengerAlreadyBooked) {
@@ -56,7 +48,7 @@ export class BookingService {
         );
       }
 
-      const duplicateSeat = await manager.findOne(Booking, {
+      const duplicateSeat = await this.bookingRepository.findOne({
         where: { flight: { id: flightId }, seatNumber },
       });
       if (duplicateSeat) {
@@ -65,51 +57,29 @@ export class BookingService {
         );
       }
 
-      const bookedCount = await manager.count(Booking, {
+      const bookedCount = await this.bookingRepository.count({
         where: { flight: { id: flightId } },
       });
       if (bookedCount >= flight.availableSeats) {
         throw new BadRequestException('This flight is fully booked.');
       }
 
-      const newBooking = manager.create(Booking, {
+      const newBooking = this.bookingRepository.create({
         passenger,
         flight,
         seatNumber,
         passengerId,
         flightId,
       });
-      await manager.save(newBooking);
+      await this.bookingRepository.save(newBooking);
 
       if (flight.availableSeats > 0) {
         flight.availableSeats -= 1;
-        await manager.save(flight);
+        await this.flightRepository.save(flight);
       }
 
-      await queryRunner.commitTransaction();
       return newBooking;
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-
-      if (
-        err instanceof NotFoundException ||
-        err instanceof BadRequestException
-      ) {
-        throw err;
-      }
-
-      if (err.code === '23505') {
-        throw new BadRequestException(
-          'A booking conflict occurred. The seat or passenger-flight combination is already taken.',
-        );
-      }
-
-      throw new InternalServerErrorException(
-        'An internal error occurred during booking.',
-      );
-    } finally {
-      await queryRunner.release();
-    }
+  
   }
 
   async findOne(id: string): Promise<Booking> {

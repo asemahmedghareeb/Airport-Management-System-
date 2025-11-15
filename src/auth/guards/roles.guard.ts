@@ -26,16 +26,34 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException(
         'No user found in request - authenticate first',
       );
-    }
-    const userRoles: string[] = user.role || [];
-    const staffRole = user?.staffRole;
-    console.log(requiredRoles);
-    const has = requiredRoles.some((role) => userRoles.includes(role));
-    const hasStaff = requiredRoles.some((role) => staffRole.includes(role));
-    if (!has && !hasStaff)
+    } 
+    // const userRoles: string[]=[];
+    // if(user.role){
+    //   userRoles.push(user.role);
+    // }
+    // const staffRole = user?.staffRole;
+    // console.log(requiredRoles);
+    // const has = requiredRoles.some((role) => userRoles.includes(role));
+    // const hasStaff = requiredRoles.some((role) => staffRole.includes(role));
+    // if (!has && !hasStaff)
+    //   throw new ForbiddenException(
+    //     `Required role: ${requiredRoles.join(', ')}`,
+    //   );
+
+    const userRoles: string[] = [user.role, user.staffRole].filter(Boolean);
+
+    // 4. Check if *any* of the user's roles are in the requiredRoles array.
+    const hasPermission = userRoles.some((role) =>
+      requiredRoles.includes(role),
+    );
+
+    if (!hasPermission) {
       throw new ForbiddenException(
-        `Required role: ${requiredRoles.join(', ')}`,
+        `You do not have the required permission. Required: ${requiredRoles.join(
+          ', ',
+        )}`,
       );
+    }
 
     return true;
   }

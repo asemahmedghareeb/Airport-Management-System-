@@ -12,7 +12,6 @@ import { FlightService } from '../flight.service';
 @Injectable()
 export class IsFlightAdmin implements CanActivate {
   constructor(
-    private readonly reflector: Reflector,
     private readonly flightService: FlightService,
   ) {}
   
@@ -26,7 +25,7 @@ export class IsFlightAdmin implements CanActivate {
       throw new ForbiddenException('No user found in request');
     }
 
-    // ✅ Must be admin
+
     if (user.role !== Role.ADMIN) {
       throw new ForbiddenException('Only admins can access this');
     }
@@ -53,6 +52,7 @@ export class IsFlightAdmin implements CanActivate {
       );
     }
 
+    ctx.getContext().flight = flight;
     return true;
   }
 }

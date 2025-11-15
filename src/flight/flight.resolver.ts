@@ -7,6 +7,7 @@ import {
   ResolveField,
   Parent,
   Subscription,
+  Context,
 } from '@nestjs/graphql';
 import { FlightService } from './flight.service';
 import { Flight } from './entities/flight.entity';
@@ -49,8 +50,8 @@ export class FlightResolver {
   @UseGuards(IsFlightAuthorized)
   @Roles(Role.ADMIN, Role.STAFF)
   @Mutation(() => Flight)
-  updateFlight(@Args('input') input: UpdateFlightInput) {
-    return this.flightService.update(input);
+  updateFlight(@Args('input') input: UpdateFlightInput,@Context('flight') flight: Flight) {
+    return this.flightService.update(input,flight);
   }
 
   @UseGuards(IsFlightAuthorized)

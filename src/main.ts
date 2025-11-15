@@ -3,9 +3,10 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import rateLimit from 'express-rate-limit';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 async function bootstrap() {
+  initializeTransactionalContext();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
   app.use(
     rateLimit({
       windowMs: 60 * 1000,

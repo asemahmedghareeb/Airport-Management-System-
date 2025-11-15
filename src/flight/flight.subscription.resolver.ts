@@ -3,9 +3,10 @@ import { Flight } from './entities/flight.entity';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Inject } from '@nestjs/common';
 
+const PUB_SUB = 'PUB_SUB';
 @Resolver(() => Flight)
 export class FlightSubscriptionResolver {
-  constructor(@Inject('PUB_SUB') private readonly pubSub: RedisPubSub) {}
+  constructor(@Inject(PUB_SUB) private readonly pubSub: RedisPubSub) {}
 
   @Subscription(() => Flight, {
     name: 'flightStatusUpdated',
