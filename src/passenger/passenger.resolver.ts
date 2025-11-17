@@ -23,6 +23,11 @@ import { Role } from 'src/auth/role.enum';
 import { UserLoader } from 'src/dataLoaders/user.loader';
 import { BookingLoader } from 'src/dataLoaders/booking.loader';
 import { IsOwnerGuard } from './guards/isIwner.guard';
+import { genericPaginated } from 'src/common/paginated-output';
+import { IPaginatedType } from 'src/common/paginated-output';
+
+const PaginatedPassengerOutput = genericPaginated(Passenger);
+
 
 @UseGuards(AuthGuard, RolesGuard)
 @Resolver(() => Passenger)
@@ -33,15 +38,17 @@ export class PassengerResolver {
     private readonly bookingLoader: BookingLoader,
   ) {}
 
+
   @Roles(Role.SUPER_ADMIN)
-  @Query(() => PaginatedPassenger, { name: 'passengers' })
+  @Query(() => PaginatedPassengerOutput, { name: 'passengers' })
   findAll(
     @Args('pagination', { nullable: true })
     pagination: PaginationInput = { page: 1, limit: 10 },
     @Args('filter', { nullable: true }) filter: PassengerFilterInput = {},
-  ): Promise<PaginatedPassenger> {
+  ): Promise<IPaginatedType<Passenger>> {
     return this.passengerService.findAll(pagination, filter);
   }
+
 
   @UseGuards(IsOwnerGuard)
   @Roles(Role.SUPER_ADMIN, Role.PASSENGER)

@@ -28,6 +28,7 @@ import { CommonModule } from './common/common.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
 import { PubSubModule } from './pubsub/pubsub.module';
+import { FcmModule } from './fcm/fcm.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -59,7 +60,7 @@ import { PubSubModule } from './pubsub/pubsub.module';
             User,
             Airport,
             Flight,
-            Staff,
+            Staff, 
             Passenger,
             Booking,
             FlightStaff,
@@ -129,6 +130,7 @@ import { PubSubModule } from './pubsub/pubsub.module';
     DataLoadersModule,
     CommonModule,
     PubSubModule,
+    FcmModule,
   ],
  
 })

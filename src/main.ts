@@ -7,6 +7,11 @@ import { initializeTransactionalContext } from 'typeorm-transactional';
 async function bootstrap() {
   initializeTransactionalContext();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableCors({
+    origin: 'http://localhost:5173', 
+    credentials: true, 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
   app.use(
     rateLimit({
       windowMs: 60 * 1000,

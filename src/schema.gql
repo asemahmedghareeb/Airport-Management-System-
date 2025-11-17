@@ -103,9 +103,14 @@ type PaginatedStaff {
   totalPages: Int!
 }
 
-type PaginatedPassenger {
+type PaginatedPassengerOutput {
+  """The list of items on this page."""
   items: [Passenger!]!
+
+  """The total number of items in the collection."""
   totalItems: Int!
+
+  """The total number of pages."""
   totalPages: Int!
 }
 
@@ -146,7 +151,7 @@ type Query {
   staffMember(id: ID!): Staff!
   staffByAirport(airportId: ID!): [Staff!]!
   staffByFlight(flightId: ID!): [Staff!]!
-  passengers(pagination: PaginationInput, filter: PassengerFilterInput): PaginatedPassenger!
+  passengers(pagination: PaginationInput, filter: PassengerFilterInput): PaginatedPassengerOutput!
   passenger(id: ID!): Passenger!
   booking(id: ID!): Booking!
   bookings(pagination: PaginationInput): PaginatedBooking!
@@ -201,7 +206,7 @@ type Mutation {
   updateBooking(input: UpdateBookingInput!): Booking!
   deleteBooking(id: ID!): Booking!
   registerPushDevice(input: RegisterPushDeviceInput!): PushDevice!
-  sendNotification(input: SendNotificationInput!): NotificationResponse!
+  sendNotification(notification: SendNotificationDto!): String!
 }
 
 input RegisterPassengerInput {
@@ -321,10 +326,10 @@ enum DeviceType {
   ANDROID
 }
 
-input SendNotificationInput {
+input SendNotificationDto {
+  deviceId: String!
   title: String!
-  message: String!
-  playerIds: [String!]!
+  body: String!
 }
 
 type Subscription {

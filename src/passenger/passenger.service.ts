@@ -12,6 +12,7 @@ import { PassengerFilterInput } from './dto/passengerFilterInput.dto';
 import { PaginatedPassenger } from './dto/paginatedPassenger.dto';
 import { UpdatePassengerInput } from './dto/passengerUpdateInput.dto';
 import { User } from 'src/auth/entities/user.entity';
+import { IPaginatedType } from 'src/common/paginated-output';
 
 @Injectable()
 export class PassengerService {
@@ -30,12 +31,12 @@ export class PassengerService {
       throw new NotFoundException(`Passenger with ID "${id}" not found.`);
     }
     return passenger;
-  } 
+  }
 
   async findAll(
     pagination: PaginationInput,
     filter: PassengerFilterInput,
-  ): Promise<PaginatedPassenger> {
+  ): Promise<IPaginatedType<Passenger>> {
     const { page, limit } = pagination;
     const { name, passportNumber, nationality } = filter;
     const skip = (page - 1) * limit;
@@ -68,11 +69,11 @@ export class PassengerService {
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
     };
-  } 
+  }
 
   async update(input: UpdatePassengerInput): Promise<Passenger> {
     const { id, ...updateFields } = input;
-    const passenger = await this.findOne(id); 
+    const passenger = await this.findOne(id);
 
     if (
       updateFields.passportNumber &&
@@ -88,7 +89,7 @@ export class PassengerService {
 
     Object.assign(passenger, updateFields);
     return this.passengerRepository.save(passenger);
-  } 
+  }
 
   async delete(id: string): Promise<Passenger> {
     const passenger = await this.findOne(id);
@@ -105,7 +106,6 @@ export class PassengerService {
 
     return passenger;
   }
-
 
   async findByIds(ids: string[]): Promise<Passenger[]> {
     return await this.passengerRepository.find({ where: { id: In(ids) } });
