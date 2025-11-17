@@ -21,8 +21,10 @@ import { RegisterResponse } from './dto/registerResponse.dto';
 import { VerifyOtpInput } from './dto/verifyOtpInput';
 import { EmailsService } from 'src/emails/emails.service';
 import { ResendOtpInput } from './dto/resendOtpInput';
+import { OAuth2Client } from 'google-auth-library';
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -34,7 +36,46 @@ export class AuthService {
     private airportsRepository: Repository<Airport>,
     private jwtService: JwtService,
     private emailService: EmailsService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+    );
+  }
+
+
+  async exchangeCodeForUser(code: string) {
+    try {
+      const { tokens } = await this.googleClient.getToken({
+        code,
+        redirect_uri: 'postmessage', 
+      });
+      // console.log(tokens);
+
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: tokens.id_token!,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        throw new UnauthorizedException('Invalid Google Code');
+      }
+
+      return {
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+        googleAccessToken: tokens.access_token,
+      };
+
+    } catch (error) {
+      console.error('Google Exchange Error:', error);
+      throw new UnauthorizedException('Invalid Google Code');
+    }
+  }
+
+
 
   async registerPassenger(
     input: RegisterPassengerInput,
@@ -258,6 +299,9 @@ export class AuthService {
       refreshToken,
     };
   }
+
+  
+
 
   async refreshToken(userId: string): Promise<AuthResponse> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });

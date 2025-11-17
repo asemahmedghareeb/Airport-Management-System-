@@ -7,9 +7,22 @@ import { Passenger } from '../passenger/entities/passenger.entity';
 import { Staff } from 'src/staff/entities/staff.entity';
 import { Airport } from 'src/airport/entities/airport.entity';
 import { EmailsModule } from 'src/emails/emails.module';
+import { ConfigModule } from '@nestjs/config';
+import { AuthController } from './auth.controller';
+import googleOAuthConfig from './config/google.oauth.config';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { PassportModule } from '@nestjs/passport';
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Passenger, Staff, Airport]),EmailsModule],
-  providers: [AuthResolver, AuthService],
+  imports: [
+    PassportModule,
+    TypeOrmModule.forFeature([User, Passenger, Staff, Airport]),
+    EmailsModule,
+    ConfigModule.forFeature(googleOAuthConfig),
+
+  ],
+  providers: [AuthResolver, AuthService, GoogleAuthGuard, GoogleStrategy],
   exports: [AuthService],
+  controllers: [AuthController],
 })
 export class AuthModule {}
